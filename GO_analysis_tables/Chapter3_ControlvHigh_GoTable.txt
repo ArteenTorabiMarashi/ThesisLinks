@@ -1,0 +1,34 @@
+GO.ID,Term,Annotated,Significant,Expected,p.value,p.adj
+GO:0061541,rhabdomere morphogenesis,5,2,0.06,0.0014,1
+GO:0051017,actin filament bundle assembly,34,4,0.41,0.0016,1
+GO:0007475,apposition of dorsal and ventral imagina...,20,3,0.24,0.0017,1
+GO:0016199,axon midline choice point recognition,25,3,0.3,0.0032,1
+GO:0050808,synapse organization,293,8,3.52,0.0036,1
+GO:0016332,establishment or maintenance of polarity...,8,2,0.1,0.0038,1
+GO:0007157,heterophilic cell-cell adhesion via plas...,27,3,0.32,0.0040,1
+GO:0018401,peptidyl-proline hydroxylation to 4-hydr...,27,3,0.32,0.0040,1
+GO:0043087,regulation of GTPase activity,89,7,1.07,0.0042,1
+GO:0090630,activation of GTPase activity,28,3,0.34,0.0045,1
+GO:0045186,zonula adherens assembly,10,2,0.12,0.0061,1
+GO:0045214,sarcomere organization,35,3,0.42,0.0084,1
+GO:0030036,actin cytoskeleton organization,281,16,3.38,0.0097,1
+GO:0035023,regulation of Rho protein signal transdu...,32,3,0.38,0.0152,1
+GO:0045886,negative regulation of synaptic assembly...,44,3,0.53,0.0157,1
+GO:0045176,apical protein localization,17,2,0.2,0.0173,1
+GO:0099536,synaptic signaling,295,11,3.55,0.0227,1
+GO:0008078,mesodermal cell migration,20,2,0.24,0.0237,1
+GO:0046390,ribose phosphate biosynthetic process,86,2,1.03,0.0239,1
+GO:0048489,synaptic vesicle transport,21,2,0.25,0.0259,1
+GO:0051491,positive regulation of filopodium assemb...,23,2,0.28,0.0308,1
+GO:0006816,calcium ion transport,66,3,0.79,0.0331,1
+GO:0098813,nuclear chromosome segregation,183,6,2.2,0.0349,1
+GO:0060078,regulation of postsynaptic membrane pote...,9,2,0.11,0.0354,1
+GO:0050802,circadian sleep/wake cycle sleep,38,2,0.46,0.0355,1
+GO:0030866,cortical actin cytoskeleton organization,61,3,0.73,0.0369,1
+GO:0007605,sensory perception of sound,63,3,0.76,0.0400,1
+GO:0007455,eye-antennal disc morphogenesis,42,3,0.5,0.0437,1
+GO:0050770,regulation of axonogenesis,46,3,0.55,0.0438,1
+GO:0008064,regulation of actin polymerization or de...,45,2,0.54,0.0471,1
+GO:0035149,lumen formation open tracheal system,29,2,0.35,0.0471,1
+GO:0007614,short-term memory,29,2,0.35,0.0471,1
+GO:0010883,regulation of lipid storage,41,3,0.49,0.0495,1

@@ -1,0 +1,61 @@
+GO.ID,Term,Annotated,Significant,Expected,p.value,p.adj
+GO:0002181,cytoplasmic translation,123,74,37.11,4.6e-16,1.90578e-12
+GO:0040003,chitin-based cuticle development,189,86,57.03,4.2e-06,0.0087003
+GO:0003333,amino acid transmembrane transport,41,23,12.37,0.00019,0.26239
+GO:0006171,cAMP biosynthetic process,5,5,1.51,0.00249,1
+GO:0018345,protein palmitoylation,16,8,4.83,0.00250,1
+GO:0009065,glutamine family amino acid catabolic pr...,15,10,4.53,0.00380,1
+GO:0090254,cell elongation involved in imaginal dis...,11,8,3.32,0.00444,1
+GO:0006486,protein glycosylation,87,29,26.25,0.00459,1
+GO:0001737,establishment of imaginal disc-derived w...,25,14,7.54,0.00628,1
+GO:0065003,protein-containing complex assembly,444,145,133.97,0.00744,1
+GO:0007450,dorsal/ventral pattern formation imagin...,54,22,16.29,0.00824,1
+GO:0006030,chitin metabolic process,106,46,31.98,0.00925,1
+GO:0051028,mRNA transport,43,16,12.97,0.01094,1
+GO:0060232,delamination,11,7,3.32,0.01120,1
+GO:0051036,regulation of endosome size,6,5,1.81,0.01121,1
+GO:0006627,protein processing involved in protein t...,6,5,1.81,0.01121,1
+GO:0050714,positive regulation of protein secretion,21,8,6.34,0.01124,1
+GO:0045571,negative regulation of imaginal disc gro...,17,10,5.13,0.01318,1
+GO:0035317,imaginal disc-derived wing hair organiza...,47,26,14.18,0.01434,1
+GO:0072659,protein localization to plasma membrane,46,21,13.88,0.01454,1
+GO:0018401,peptidyl-proline hydroxylation to 4-hydr...,13,8,3.92,0.01882,1
+GO:0035002,liquid clearance open tracheal system,18,10,5.43,0.02174,1
+GO:0001666,response to hypoxia,62,24,18.71,0.02497,1
+GO:0007349,cellularization,98,27,29.57,0.02561,1
+GO:0009952,anterior/posterior pattern specification,168,58,50.69,0.02578,1
+GO:0042659,regulation of cell fate specification,27,14,8.15,0.02585,1
+GO:0043984,histone H4-K16 acetylation,9,6,2.72,0.02597,1
+GO:0006414,translational elongation,30,15,9.05,0.02729,1
+GO:0034982,mitochondrial protein processing,9,8,2.72,0.02736,1
+GO:0014902,myotube differentiation,55,19,16.6,0.02744,1
+GO:1904747,positive regulation of apoptotic process...,8,4,2.41,0.02746,1
+GO:0050000,chromosome localization,29,9,8.75,0.02750,1
+GO:0000398,mRNA splicing via spliceosome,244,81,73.62,0.02927,1
+GO:0001706,endoderm formation,7,5,2.11,0.02947,1
+GO:0006465,signal peptide processing,7,5,2.11,0.02947,1
+GO:0006528,asparagine metabolic process,7,5,2.11,0.02947,1
+GO:0090251,protein localization involved in establi...,7,5,2.11,0.02947,1
+GO:0050884,neuromuscular process controlling postur...,7,5,2.11,0.02947,1
+GO:0051124,synaptic assembly at neuromuscular junct...,136,46,41.04,0.03053,1
+GO:0045039,protein insertion into mitochondrial inn...,5,4,1.51,0.03140,1
+GO:0006098,pentose-phosphate shunt,5,4,1.51,0.03140,1
+GO:0046477,glycosylceramide catabolic process,5,4,1.51,0.03140,1
+GO:0007263,nitric oxide mediated signal transductio...,5,4,1.51,0.03140,1
+GO:0006537,glutamate biosynthetic process,5,4,1.51,0.03140,1
+GO:0032494,response to peptidoglycan,5,4,1.51,0.03140,1
+GO:0007625,grooming behavior,5,4,1.51,0.03140,1
+GO:0031396,regulation of protein ubiquitination,26,9,7.85,0.03146,1
+GO:0046785,microtubule polymerization,24,8,7.24,0.03147,1
+GO:0051480,regulation of cytosolic calcium ion conc...,29,8,8.75,0.03154,1
+GO:0007431,salivary gland development,127,45,38.32,0.03944,1
+GO:0042438,melanin biosynthetic process,12,7,3.62,0.03969,1
+GO:0001578,microtubule bundle formation,49,18,14.78,0.03970,1
+GO:0032507,maintenance of protein location in cell,20,8,6.03,0.03980,1
+GO:0009063,cellular amino acid catabolic process,48,19,14.48,0.04344,1
+GO:0006749,glutathione metabolic process,50,22,15.09,0.04560,1
+GO:0006415,translational termination,10,6,3.02,0.04854,1
+GO:0007548,sex differentiation,96,31,28.97,0.04862,1
+GO:0008345,larval locomotory behavior,36,16,10.86,0.04907,1
+GO:0060548,negative regulation of cell death,122,28,36.81,0.04951,1
+GO:0000028,ribosomal small subunit assembly,20,10,6.03,0.04958,1

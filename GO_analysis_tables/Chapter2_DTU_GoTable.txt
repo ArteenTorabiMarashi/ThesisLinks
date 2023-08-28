@@ -1,0 +1,44 @@
+GO.ID,Term,Annotated,Significant,Expected,p.value,p.adj
+GO:0006413,translational initiation,26,19,9.65,0.0023,1
+GO:0001736,establishment of planar polarity,63,31,23.39,0.0026,1
+GO:0072499,photoreceptor cell axon guidance,21,14,7.8,0.0056,1
+GO:0007297,ovarian follicle cell migration,75,36,27.84,0.0069,1
+GO:0045132,meiotic chromosome segregation,27,14,10.02,0.0070,1
+GO:0046660,female sex differentiation,10,7,3.71,0.0070,1
+GO:0016226,iron-sulfur cluster assembly,5,5,1.86,0.0070,1
+GO:0001731,formation of translation preinitiation c...,5,5,1.86,0.0070,1
+GO:0033500,carbohydrate homeostasis,26,12,9.65,0.0070,1
+GO:0016325,oocyte microtubule cytoskeleton organiza...,20,11,7.42,0.0073,1
+GO:0046843,dorsal appendage formation,28,17,10.39,0.0093,1
+GO:0035317,imaginal disc-derived wing hair organiza...,32,19,11.88,0.0102,1
+GO:0048168,regulation of neuronal synaptic plastici...,7,6,2.6,0.0124,1
+GO:0006605,protein targeting,34,15,12.62,0.0125,1
+GO:0006672,ceramide metabolic process,9,7,3.34,0.0159,1
+GO:0050803,regulation of synapse structure or activ...,117,46,43.43,0.0160,1
+GO:0035147,branch fusion open tracheal system,11,8,4.08,0.0179,1
+GO:0006633,fatty acid biosynthetic process,21,13,7.8,0.0181,1
+GO:0045451,pole plasm oskar mRNA localization,26,17,9.65,0.0187,1
+GO:0007392,initiation of dorsal closure,10,7,3.71,0.0189,1
+GO:0032007,negative regulation of TOR signaling,11,6,4.08,0.0190,1
+GO:0051453,regulation of intracellular pH,12,6,4.45,0.0190,1
+GO:0007298,border follicle cell migration,70,31,25.98,0.0262,1
+GO:0045498,sex comb development,6,5,2.23,0.0291,1
+GO:0060232,delamination,6,5,2.23,0.0291,1
+GO:1902410,mitotic cytokinetic process,6,5,2.23,0.0291,1
+GO:0006941,striated muscle contraction,6,5,2.23,0.0291,1
+GO:0032233,positive regulation of actin filament bu...,6,5,2.23,0.0291,1
+GO:0000184,nuclear-transcribed mRNA catabolic proce...,6,5,2.23,0.0291,1
+GO:0007362,terminal region determination,6,5,2.23,0.0291,1
+GO:0046716,muscle cell cellular homeostasis,22,13,8.17,0.0295,1
+GO:0009952,anterior/posterior pattern specification,80,44,29.7,0.0327,1
+GO:0030071,regulation of mitotic metaphase/anaphase...,8,6,2.97,0.0341,1
+GO:0045314,regulation of compound eye photoreceptor...,8,6,2.97,0.0341,1
+GO:0030154,cell differentiation,852,330,316.26,0.0344,1
+GO:0045727,positive regulation of translation,16,10,5.94,0.0346,1
+GO:0046854,phosphatidylinositol phosphate biosynthe...,14,9,5.2,0.0358,1
+GO:0007390,germ-band shortening,14,9,5.2,0.0358,1
+GO:0015986,proton motive force-driven ATP synthesis,10,7,3.71,0.0361,1
+GO:0016348,imaginal disc-derived leg joint morphoge...,10,7,3.71,0.0361,1
+GO:0006464,cellular protein modification process,519,190,192.65,0.0375,1
+GO:0045087,innate immune response,96,34,35.63,0.0435,1
+GO:0007498,mesoderm development,52,25,19.3,0.0489,1

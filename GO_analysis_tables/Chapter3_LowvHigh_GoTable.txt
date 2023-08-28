@@ -1,0 +1,96 @@
+GO.ID,Term,Annotated,Significant,Expected,p.value,p.adj
+GO:2000289,regulation of photoreceptor cell axon gu...,5,3,0.12,0.00012,0.27365
+GO:0007528,neuromuscular junction development,176,12,4.12,0.00013,0.27365
+GO:0045892,negative regulation of transcription DN...,291,17,6.81,0.00039,0.495844444444444
+GO:0007615,anesthesia-resistant memory,17,4,0.4,0.00055,0.495844444444444
+GO:0046339,diacylglycerol metabolic process,8,3,0.19,0.00065,0.495844444444444
+GO:0022008,neurogenesis,894,46,20.93,0.00072,0.495844444444444
+GO:0008016,regulation of heart contraction,29,6,0.68,0.00093,0.495844444444444
+GO:0051017,actin filament bundle assembly,34,7,0.8,0.00102,0.495844444444444
+GO:0006812,cation transport,286,12,6.69,0.00106,0.495844444444444
+GO:0034332,adherens junction organization,39,5,0.91,0.00179,0.75359
+GO:0007632,visual behavior,24,4,0.56,0.00215,0.822863636363636
+GO:0030708,germarium-derived female germ-line cyst ...,12,3,0.28,0.00238,0.834983333333333
+GO:0007043,cell-cell junction assembly,63,6,1.47,0.00311,1
+GO:0007476,imaginal disc-derived wing morphogenesis,273,23,6.39,0.00341,1
+GO:0007190,activation of adenylate cyclase activity,5,2,0.12,0.00521,1
+GO:0097688,glutamate receptor clustering,5,2,0.12,0.00521,1
+GO:0042066,perineurial glial growth,5,2,0.12,0.00521,1
+GO:0007212,dopamine receptor signaling pathway,5,2,0.12,0.00521,1
+GO:0007216,G protein-coupled glutamate receptor sig...,5,2,0.12,0.00521,1
+GO:0045494,photoreceptor cell maintenance,16,3,0.37,0.00566,1
+GO:0007291,sperm individualization,52,5,1.22,0.00717,1
+GO:0019344,cysteine biosynthetic process,6,2,0.14,0.00769,1
+GO:0006751,glutathione catabolic process,6,2,0.14,0.00769,1
+GO:0031532,actin cytoskeleton reorganization,34,4,0.8,0.00783,1
+GO:0007479,leg disc proximal/distal pattern formati...,18,3,0.42,0.00797,1
+GO:0008355,olfactory learning,45,5,1.05,0.00859,1
+GO:0045214,sarcomere organization,35,4,0.82,0.00868,1
+GO:0007601,visual perception,19,3,0.44,0.00931,1
+GO:0035002,liquid clearance open tracheal system,19,3,0.44,0.00931,1
+GO:0007630,jump response,7,2,0.16,0.01060,1
+GO:0045823,positive regulation of heart contraction,7,2,0.16,0.01060,1
+GO:0007475,apposition of dorsal and ventral imagina...,20,3,0.47,0.01076,1
+GO:0042461,photoreceptor cell development,111,6,2.6,0.01376,1
+GO:0046661,male sex differentiation,31,3,0.73,0.01387,1
+GO:0007415,defasciculation of motor neuron axon,8,2,0.19,0.01392,1
+GO:0097320,plasma membrane tubulation,8,2,0.19,0.01392,1
+GO:0071880,adenylate cyclase-activating adrenergic ...,8,2,0.19,0.01392,1
+GO:0090278,negative regulation of peptide hormone s...,8,2,0.19,0.01392,1
+GO:0016332,establishment or maintenance of polarity...,8,2,0.19,0.01392,1
+GO:0035317,imaginal disc-derived wing hair organiza...,48,4,1.12,0.01399,1
+GO:0007435,salivary gland morphogenesis,98,6,2.29,0.01673,1
+GO:0008078,mesodermal cell migration,20,3,0.47,0.01753,1
+GO:0032958,inositol phosphate biosynthetic process,9,2,0.21,0.01763,1
+GO:0010496,intercellular transport,9,2,0.21,0.01763,1
+GO:0016204,determination of muscle attachment site,9,2,0.21,0.01763,1
+GO:0048047,mating behavior sex discrimination,9,2,0.21,0.01763,1
+GO:0007155,cell adhesion,211,10,4.94,0.01861,1
+GO:0061320,pericardial nephrocyte differentiation,10,2,0.23,0.02170,1
+GO:0043153,entrainment of circadian clock by photop...,10,2,0.23,0.02170,1
+GO:0045186,zonula adherens assembly,10,2,0.23,0.02170,1
+GO:0045937,positive regulation of phosphate metabol...,72,3,1.69,0.02177,1
+GO:0048736,appendage development,340,26,7.96,0.02180,1
+GO:0044719,regulation of imaginal disc-derived wing...,26,3,0.61,0.02215,1
+GO:0099537,trans-synaptic signaling,293,16,6.86,0.02264,1
+GO:0042706,eye photoreceptor cell fate commitment,63,3,1.47,0.02336,1
+GO:0042326,negative regulation of phosphorylation,40,2,0.94,0.02340,1
+GO:0007455,eye-antennal disc morphogenesis,42,4,0.98,0.02679,1
+GO:0007430,terminal branching open tracheal system,28,3,0.66,0.02697,1
+GO:0007616,long-term memory,74,5,1.73,0.02943,1
+GO:0007614,short-term memory,29,3,0.68,0.02958,1
+GO:0008347,glial cell migration,29,3,0.68,0.02958,1
+GO:0035160,maintenance of epithelial integrity ope...,12,2,0.28,0.03086,1
+GO:0045332,phospholipid translocation,12,2,0.28,0.03086,1
+GO:0030837,negative regulation of actin filament po...,12,2,0.28,0.03086,1
+GO:0019933,cAMP-mediated signaling,12,2,0.28,0.03086,1
+GO:0046621,negative regulation of organ growth,12,2,0.28,0.03086,1
+GO:0007480,imaginal disc-derived leg morphogenesis,79,5,1.85,0.03091,1
+GO:0008045,motor neuron axon guidance,75,5,1.76,0.03095,1
+GO:0007349,cellularization,104,9,2.43,0.03151,1
+GO:0030036,actin cytoskeleton organization,281,19,6.58,0.03438,1
+GO:0051321,meiotic cell cycle,237,5,5.55,0.03650,1
+GO:0007189,adenylate cyclase-activating G protein-c...,40,5,0.94,0.03749,1
+GO:0016203,muscle attachment,41,5,0.96,0.03749,1
+GO:0050821,protein stabilization,32,3,0.75,0.03816,1
+GO:0048149,behavioral response to ethanol,55,4,1.29,0.03944,1
+GO:0007619,courtship behavior,117,8,2.74,0.04021,1
+GO:0006357,regulation of transcription by RNA polym...,624,27,14.61,0.04030,1
+GO:0001941,postsynaptic membrane organization,14,2,0.33,0.04126,1
+GO:0045666,positive regulation of neuron differenti...,14,2,0.33,0.04126,1
+GO:0045433,male courtship behavior veined wing gen...,14,2,0.33,0.04126,1
+GO:0042059,negative regulation of epidermal growth ...,33,3,0.77,0.04127,1
+GO:0046777,protein autophosphorylation,42,4,0.98,0.04416,1
+GO:0007443,Malpighian tubule morphogenesis,45,4,1.05,0.04419,1
+GO:0001754,eye photoreceptor cell differentiation,184,9,4.31,0.04559,1
+GO:0035265,organ growth,33,4,0.77,0.04586,1
+GO:0031281,positive regulation of cyclase activity,8,3,0.19,0.04594,1
+GO:1902275,regulation of chromatin organization,22,3,0.51,0.04599,1
+GO:0009187,cyclic nucleotide metabolic process,31,3,0.73,0.04603,1
+GO:0032233,positive regulation of actin filament bu...,7,2,0.16,0.04611,1
+GO:2000369,regulation of clathrin-dependent endocyt...,8,2,0.19,0.04611,1
+GO:0033559,unsaturated fatty acid metabolic process,13,2,0.3,0.04613,1
+GO:0048512,circadian behavior,108,4,2.53,0.04617,1
+GO:0045055,regulated exocytosis,69,3,1.62,0.04619,1
+GO:0035249,synaptic transmission glutamatergic,25,4,0.59,0.04631,1
+GO:0006506,GPI anchor biosynthetic process,35,3,0.82,0.04787,1
