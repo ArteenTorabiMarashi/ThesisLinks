@@ -1,0 +1,224 @@
+---
+title: "plotting DE genes August 2023"
+output:
+  pdf_document: default
+  html_document: default
+date: '2023-08-29'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r, include = FALSE}
+library(tximport)
+library(readr)
+library(stringr)
+library(edgeR)
+library(limma)
+library(emmeans)
+library(parallel)
+library(ggplot2)
+library(ggpubr)
+library(gridExtra)
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+library(ggrepel)
+library(data.table)
+library(DESeq2)
+```
+
+
+
+```{r, include = FALSE}
+#To where quant folder is
+setwd("/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data")
+quant_files <- file.path("quants", list.files("quants"), "quant.sf")
+samples <- quant_files
+samples <- substring(samples, 8, 26) #grab just sample name from the file name
+
+names(quant_files) <- samples
+
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
+k <- keys(txdb, keytype = "TXNAME")
+tx2gene <- AnnotationDbi::select(x = txdb, keys = k, "GENEID", "TXNAME")
+
+txi <- tximport(quant_files, type = "salmon", tx2gene = tx2gene)
+
+selection <- substring(samples, 4, 4)
+selection <- gsub("C", "control", selection)
+selection <- gsub("D", "down", selection)
+selection <- gsub("U", "up", selection)
+selection <- as.factor(selection)
+
+
+lineage <- substring(samples, 7, 7)
+lineage <- as.factor(lineage)
+
+sex <- substring(samples, 9, 9)
+sex <- gsub("F", "female", sex)
+sex <- gsub("M", "male", sex)
+sex <- as.factor(sex)
+
+expMatched <- substring(samples, 11, 11)
+expMatched <- gsub("S", "socArena", expMatched)
+expMatched <- gsub("V", "vial", expMatched)
+expMatched <- as.factor(expMatched)
+
+
+lane <- substring(samples, 19, 19)
+lane <- factor(lane)
+
+rna.design <- data.frame(sample = samples, 
+                         file = quant_files,
+                         selection = selection,
+                         sex = sex,
+                         expMatched = expMatched,
+                         lane = lane,
+                         lineage = lineage)
+
+dgeList <- DGEList(txi$counts)
+
+design <- model.matrix(~ lane + lineage + sex + expMatched +
+                         selection + sex:expMatched + selection:expMatched + 
+                         selection:sex,
+                       data = rna.design)
+
+keep2 <- filterByExpr(dgeList, design)
+dgeList <- dgeList[keep2, ]
+
+# normalize and run voom transformation
+dgeList <- calcNormFactors(dgeList)
+
+v <- voom(dgeList, design)
+voomCPM <- v$E
+sample_info <- rna.design[, -c(1:2)]
+```
+
+
+
+
+
+
+
+
+```{r, include = FALSE}
+
+geneDictionary <- read.delim(file = "/Users/arteen/Downloads/FlyGeneDictionary.txt")
+geneDictionary$FBgnID <- geneDictionary$validated_id
+
+
+selectionContrastEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionContrastEmmean_df.Rdata"))
+
+
+selectionContrastEmmean_df$selection <- relevel(as.factor(selectionContrastEmmean_df$selection), ref = "down")
+
+xAxis <- selectionContrastEmmean_df$selection
+
+xAxis <- gsub("down", 1, xAxis)
+xAxis <- gsub("control", 2, xAxis)
+xAxis <- gsub("up", 3, xAxis)
+xAxis <- as.numeric(xAxis)
+  
+selectionContrastEmmean_df$xAxis <- xAxis
+  
+sample_info_xAxis <- sample_info$selection
+
+sample_info_xAxis <- gsub("down", 1, sample_info_xAxis)
+sample_info_xAxis <- gsub("control", 2, sample_info_xAxis)
+sample_info_xAxis <- gsub("up", 3, sample_info_xAxis)
+
+sample_info_xAxis <- as.numeric(sample_info_xAxis)
+
+sample_info$xAxis <- sample_info_xAxis
+
+emmeanPlot_selection <- function(gene){
+  
+  # Gene dictionary
+  rowIndex <- which(geneDictionary$validated_id == gene)
+  geneName <- geneDictionary[rowIndex, 3]
+  if (length(geneName) == 0){ # if the gene name isnt in the dictionary
+  geneName <- gene
+  }
+  
+  # For jitter of points
+  cpmCounts <- c(voomCPM[gene,])
+  sample_infoCounts <- sample_info
+  sample_infoCounts$counts <- cpmCounts
+  
+  # For emmeans points
+  to_plot <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$geneID == gene)
+  
+  
+  pd = position_dodge(width = 0.3)
+  
+  # Actual plotting
+  ggplot() +
+    geom_point(data = to_plot, aes(x = xAxis, y = emmean), size = 3, position = pd) +
+    
+    geom_errorbar(data = to_plot, 
+                  aes(x = xAxis, y = emmean, ymin = lower.CL, ymax = upper.CL), width = 0.075, position = pd, alpha = 1) +
+    
+    geom_line(data = to_plot,
+              aes(x = xAxis, y = emmean), position = pd, alpha = 0.65) +
+    
+    geom_jitter(data = sample_infoCounts,
+                aes(x = xAxis, y = counts, color = lineage), alpha = 0.6, height = 0, width = 0.15, size = 1.5) +
+    
+    scale_x_continuous(name = "Selection", breaks = c(1.0, 2.0, 3.0),
+                       labels = c("Low", "Control", "High")) +
+    ylab(expression(log[2](CPM))) +
+    ggtitle(geneName) + 
+    theme_classic() +
+    theme( plot.title = element_text(face = "italic"), axis.text = element_text(face = "bold")) 
+   
+}
+```
+
+
+
+```{r, include = FALSE}
+
+sel_anova_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/sel_anova_df.Rdata"))
+
+# P adjust and subset
+sel_anova_df$p.adj <- p.adjust(sel_anova_df$pval, method = 'BY')
+selection_anova_subset <- subset(sel_anova_df, sel_anova_df$p.adj < 0.05)
+dim(selection_anova_subset) # 327 genes
+
+
+
+selectionContrast_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionContrast_df.Rdata"))
+
+all_selection_genes <- selectionContrast_df[selectionContrast_df$gene %in% selection_anova_subset$gene, ]
+
+
+
+# down - up
+upVdown <- subset(all_selection_genes, all_selection_genes$contrast == "down - up")
+
+upVdown_subset <- subset(upVdown, upVdown$p.value < 0.05)
+dim(upVdown_subset) # 174 genes
+
+to_plot_upVdown <- upVdown_subset[order(abs(upVdown_subset$estimate), decreasing = TRUE),]
+
+genes_toPlot <- to_plot_upVdown$geneID
+
+```
+
+
+
+
+
+```{r}
+for (g in genes_toPlot) {
+  p <- emmeanPlot_selection(g)
+  suppressWarnings(print(p))
+}
+```
+
+

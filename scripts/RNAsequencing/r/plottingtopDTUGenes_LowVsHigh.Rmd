@@ -1,0 +1,367 @@
+---
+title: "plotting DTU genes August 2023"
+output:
+  pdf_document: default
+  html_document: default
+date: '2023-08-29'
+editor_options:
+  chunk_output_type: console
+---
+```{r set up, include = FALSE}
+# DTU with glmmTMB
+
+library(DRIMSeq)
+library(DEXSeq)
+library(stageR)
+library(GenomeInfoDb)
+library(org.Dm.eg.db)
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+library(tximport)
+library(BiocParallel)
+library(car)
+library(emmeans)
+library(glmmTMB)
+library(stringr)
+library(ggplot2)
+library(cowplot)
+
+
+#To the directory of counts
+setwd("/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data")
+quant_files <- file.path("quants", list.files("quants"), "quant.sf")
+#file.exists(quant_files)
+samples <- quant_files
+samples <- substring(samples, 8, 26) #grab just sample name from the file name
+names(quant_files) <- samples
+
+selection <- substring(samples, 4, 4)
+selection <- gsub("C", "control", selection)
+selection <- gsub("D", "down", selection)
+selection <- gsub("U", "up", selection)
+selection <- as.factor(selection)
+
+lineage <- substring(samples, 7, 7)
+lineage <- as.factor(lineage)
+
+sex <- substring(samples, 9, 9)
+sex <- gsub("F", "female", sex)
+sex <- gsub("M", "male", sex)
+sex <- as.factor(sex)
+
+expMatched <- substring(samples, 11, 11)
+expMatched <- gsub("S", "socArena", expMatched)
+expMatched <- gsub("V", "vial", expMatched)
+expMatched <- as.factor(expMatched)
+
+lane <- substring(samples, 19, 19)
+lane <- factor(lane)
+
+rna.design <- data.frame(sample_id = samples, 
+                         #file = quant_files,
+                         selection = selection,
+                         sex = sex,
+                         expMatched = expMatched,
+                         lane = lane,
+                         lineage = lineage)
+rna.design$selection <- relevel(as.factor(rna.design$selection), ref = "down")
+
+
+txdb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
+k <- keys(txdb, keytype = "TXNAME")
+txdb <- AnnotationDbi::select(x = txdb, keys = k, "GENEID", "TXNAME")
+
+txi <- tximport(quant_files, type = "salmon", txOut = TRUE,
+                countsFromAbundance = "scaledTPM")
+
+cts <- txi$counts
+cts <- cts[rowSums(cts) > 0, ]
+#subset_cts <- cts[sample(nrow(cts), size=2000), ]
+subset_cts <- cts
+#all(rownames(subset_cts) == txdb$TXNAME)
+#dim(subset_cts)
+#dim(txdb)
+
+txdb_match <- txdb[txdb$TXNAME %in% rownames(subset_cts), ]
+cts_match <- subset_cts[rownames(subset_cts) %in% txdb_match$TXNAME, ]
+#dim(cts_match)
+#dim(txdb_match)
+#all(rownames(cts_match) == txdb_match$TXNAME)
+
+txdb <- txdb_match[order(txdb_match$TXNAME), ] #Reorder txdb
+subset_cts <- cts_match[order(rownames(cts_match)), ] #Reorder counts
+
+# Confirmation that everything is a-okay
+all(rownames(subset_cts) == txdb$TXNAME)
+
+
+counts <- data.frame(gene_id = txdb$GENEID,
+                     feature_id = txdb$TXNAME,
+                     subset_cts)
+
+dex_pre_filter <- dmDSdata(counts = counts, samples = rna.design)
+
+
+
+dex_filtered_subset <- dmFilter(dex_pre_filter,
+                                min_samps_feature_prop = 20,
+                                min_feature_prop = 0.05,
+                                min_samps_gene_expr = 28,
+                                min_gene_expr = 10)
+
+
+
+sample.data_subset <- DRIMSeq::samples(dex_filtered_subset)
+
+count.data_subset <- round(as.matrix(counts(dex_filtered_subset)[ , -c(1:2)]))
+
+count.data_subset_ids <- counts(dex_filtered_subset)[, c(1:2)]
+
+sample_ids <- colnames( counts(dex_filtered_subset))
+
+
+dxd_subset <- DEXSeqDataSet(countData = count.data_subset,
+                            sampleData = sample.data_subset,
+                            design = ~sample + exon + selection:exon,
+                            featureID = counts(dex_filtered_subset)$feature_id,
+                            groupID = counts(dex_filtered_subset)$gene_id)
+
+dxd_subset  <- DEXSeq::estimateSizeFactors(dxd_subset)
+sizeFactors <- colData(dxd_subset)@listData[["sizeFactor"]][1:142] # size factors but not norm factors
+
+sample_table <- as.data.frame(colData(dxd_subset))
+
+
+gene_id <- unique(count.data_subset_ids$gene_id)
+```
+
+```{r gene dictionary, include = FALSE}
+geneDictionary <- read.delim(file = "/Users/arteen/Downloads/FlyGeneDictionary.txt")
+geneDictionary$FBgnID <- geneDictionary$validated_id
+```
+
+
+```{r more set up, include = FALSE}
+lrt_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/lrt_df.Rdata"))
+anova_sex_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_sex_df.Rdata"))
+anova_selection_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_selection_df.Rdata"))
+anova_sexSel_int_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_sexSelInt_df.Rdata"))
+emmeans_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/emmeans_df.Rdata"))
+emmeans_plotting_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/emmeans_plotting_df.Rdata"))
+reduced_gene <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/reduced_gene.Rdata"))
+sex_emmeans_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/sex_emmeans_df.Rdata"))
+sex_emmeans_plotting_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/sex_emmeans_plotting_df.Rdata"))
+
+
+```
+
+
+```{r, include = FALSE}
+generate_countMatrix <- function(whatGene) {
+  # set up which gene and which transcripts
+  index <- which(count.data_subset_ids$gene_id == whatGene)
+  count_subset <- count.data_subset[ c(index), ]
+  gene_transcript_info <- count.data_subset_ids[ c(index), ]
+  transcript_num <- length(gene_transcript_info$feature_id)
+  
+  empty_counts <- rep(0, 142)
+  
+  # set up df for first transcript
+  transcript1 <- gene_transcript_info[1, 2]
+  sample_transcript_df <- sample.data_subset
+  gene_toInsert <- rep(whatGene, 142)
+  transcript_toInsert <- c(rep(transcript1, 142))
+  
+  transcript_df <- data.frame(gene_id = gene_toInsert,
+                              transcript = transcript_toInsert,
+                              counts = empty_counts)
+  
+  sample_df <- cbind(transcript_df, sample_transcript_df)
+  
+  # Add in first transcript counts
+  for (i in 1:nrow(sample_df)){
+    if (sample_df$transcript[i] == transcript1){
+      the_sample <- as.character(sample_df$sample_id[i])
+      sample_df$counts[i] <- as.integer(count_subset[1, the_sample])
+    }
+  }
+  
+  # Do the same but for all other transcripts
+  for (i in 2:transcript_num){
+    
+    next_transcript <- gene_transcript_info[i, 2]
+    next_sample_transcript_df <- sample.data_subset
+    next_transcript_toInsert <- c(rep(next_transcript, 142))
+    
+    next_transcript_df <- data.frame(gene_id = gene_toInsert,
+                                     transcript = next_transcript_toInsert,
+                                     counts = empty_counts)
+    
+    next_sample_df <- cbind(next_transcript_df, next_sample_transcript_df)
+    
+    for (j in 1:nrow(next_sample_df)){
+      if (next_sample_df$transcript[j] == next_transcript){
+        the_sample <- as.character(next_sample_df$sample_id[j])
+        next_sample_df$counts[j] <- as.integer(count_subset[i, the_sample])
+      }
+    }
+    
+    sample_df <- rbind(sample_df, next_sample_df)
+  }
+  
+  sample_df$transcript <- as.factor(sample_df$transcript) # set transcript as factor
+  
+  # set up size factors
+ 
+  
+  # To deal with complete separation
+  countsPlus <- c()
+  for (k in 1:nrow(sample_df)) {
+    countsPlus <- append(countsPlus, sample_df[k, ]$counts + 1)
+  }
+  
+  sample_df <- cbind(sample_df, countsPlus)
+  
+}
+```
+
+
+```{r plot, include = FALSE}
+
+## if using emmean set y = emmean ## but if changing to type = "response" then set y = response
+  plot_DTU <- function(whichGene, toLog = FALSE) {
+    
+    
+  gene_countMatrix <- generate_countMatrix(whichGene)  
+  rowIndex <- which(geneDictionary$validated_id == whichGene)
+  geneName <- geneDictionary[rowIndex, 3]
+  if (length(geneName) == 0){ # if the gene name isnt in the dictionary
+  geneName <- whichGene
+  }
+  plotting_df <- subset(emmeans_plotting_df, emmeans_plotting_df$gene == whichGene)
+  plotting_df$selection <- gsub("down", "Low", plotting_df$selection)
+  plotting_df$selection <- gsub("control", "Control", plotting_df$selection)
+  plotting_df$selection <- gsub("up", "High", plotting_df$selection)
+  plotting_df$selection <- factor(plotting_df$selection, levels = c("Low", "Control", "High"))
+  
+  
+  gene_countMatrix$selection <- gsub("down", "Low", gene_countMatrix$selection)
+  gene_countMatrix$selection <- gsub("control", "Control", gene_countMatrix$selection)
+  gene_countMatrix$selection <- gsub("up", "High", gene_countMatrix$selection)
+  gene_countMatrix$selection <- factor(gene_countMatrix$selection,
+                                       levels = c("Low", "Control", "High"))
+  pd = position_dodge(width = 0.9)
+  
+  if (toLog == TRUE) {
+    plotting_df$response <- log2(plotting_df$response)
+    plotting_df$lower.CL <- log2(plotting_df$lower.CL)
+    plotting_df$upper.CL <- log2(plotting_df$upper.CL)
+    gene_countMatrix$countsPlus <- log2(gene_countMatrix$countsPlus)
+  
+    
+    ggplot() + 
+    geom_point(data = plotting_df, aes(x = transcript, y = response, color = selection),
+               position = pd) +
+    
+    geom_errorbar(data = plotting_df, aes(x = transcript, y = response,
+                                        ymin = lower.CL, ymax = upper.CL, color = selection),
+                                          width = 0.8, position = pd, alpha = 0.65) +
+      
+     geom_point(data = gene_countMatrix, aes(x = transcript, y = countsPlus, color = selection), alpha = 0.15, size = 0.35, position = position_jitterdodge(dodge.width = 0.9)) + 
+      scale_color_manual(values = c("Low" = "dodgerblue", "Control" = "black", "High" = "orangered")) +
+    ggtitle(geneName) +
+    xlab("Transcript") +
+    #xlab("") +
+    #ylab("") +
+    ylab(expression(log[2](Counts))) +
+    theme_classic() +
+    #theme(plot.title = element_text(face = "italic"))
+    theme(legend.position="none", plot.title = element_text(face = "italic"))
+  }
+  else {
+    ggplot() + 
+    geom_point(data = plotting_df, aes(x = transcript, y = response, color = selection),
+               position = pd) +
+    
+    geom_errorbar(data = plotting_df, aes(x = transcript, y = response,
+                                        ymin = lower.CL, ymax = upper.CL, color = selection),
+                                          width = 0.8, position = pd, alpha = 0.65) +
+     geom_point(data = gene_countMatrix, aes(x = transcript, y = countsPlus, color = selection), alpha = 0.6, size = 0.6, position = position_jitterdodge(dodge.width = 0.9)) + 
+    ggtitle(geneName) +
+    xlab("Transcript") +
+    ylab("Counts") +
+    theme_classic() +
+    theme(plot.title = element_text(face = "italic"))
+    #theme(legend.position="none", plot.title = element_text(face = "italic"))
+  }
+}
+```
+
+
+
+
+
+```{r, include = FALSE}
+
+
+
+lrt_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/lrt_df.Rdata"))
+anova_sex_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_sex_df.Rdata"))
+anova_selection_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_selection_df.Rdata"))
+anova_sexSel_int_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/anova_sexSelInt_df.Rdata"))
+emmeans_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/emmeans_df.Rdata"))
+emmeans_plotting_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/emmeans_plotting_df.Rdata"))
+reduced_gene <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/reduced_gene.Rdata"))
+sex_emmeans_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/sex_emmeans_df.Rdata"))
+sex_emmeans_plotting_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/dtu_output/sex_emmeans_plotting_df.Rdata"))
+
+length(reduced_gene)
+
+
+
+## Selection
+anova_selection_df$p.adj <- p.adjust(anova_selection_df$pval, method = "BY")
+
+anova_selection_subset_dtu <- subset(anova_selection_df, anova_selection_df$p.adj < 0.05)
+length(unique(anova_selection_subset_dtu$gene))  # 619
+
+all_selection_genes_dtu <- emmeans_df[emmeans_df$gene %in% anova_selection_subset_dtu$gene, ]
+
+
+lrt_df$p.adj <- p.adjust(lrt_df$pval, method = "BH")
+
+lrt_subset <- subset(lrt_df, lrt_df$p.adj < 0.05)
+dim(lrt_subset) # 662 genes 
+head(lrt_df)
+
+
+
+upVdown_dtu <- subset(all_selection_genes_dtu, all_selection_genes_dtu$contrast == "down - up")
+
+upVdown_dtu_subset <- subset(upVdown_dtu, upVdown_dtu$p.value < 0.05)
+length(unique(upVdown_dtu_subset$gene)) # 190 genes
+
+to_geneList <- upVdown_dtu_subset[order(abs(upVdown_dtu_subset$estimate), decreasing = TRUE),]
+
+
+geneList <- unique(to_geneList$gene)
+
+
+```
+
+
+
+```{r}
+for (g in geneList) {
+  
+  p <- plot_DTU(g, toLog = TRUE)
+  suppressWarnings(print(p))
+  
+}
+```
+
+
+
+
+
+
+

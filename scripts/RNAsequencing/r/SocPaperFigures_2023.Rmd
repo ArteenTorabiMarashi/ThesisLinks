@@ -1,0 +1,1534 @@
+---
+title: "Sociability Gene Expression Figures 2023"
+output: pdf_document
+date: '2023-01-17'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, packages}
+library(ggplot2)
+library(tximport)
+library(readr)
+library(stringr)
+library(parallel)
+library(edgeR)
+library(limma)
+library(cowplot)
+library(ggpubr)
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+library(ggrepel)
+library(data.table)
+library(DESeq2)
+library(dplyr)
+library("RColorBrewer")
+library(lme4)
+library(glmmTMB)
+library(emmeans)
+library(parallel)
+library(ggpubr)
+library(gridExtra)
+library(ggrepel)
+library(data.table)
+library(car)
+library(UpSetR)
+
+```
+
+## Figure 2 - MA Plot
+
+```{r}
+selectionContrast_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionContrast_df.Rdata"))
+selectionContrastEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionContrastEmmean_df.Rdata"))
+
+sexContrast_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/sexContrast_df.Rdata"))
+
+sexContrastEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/sexContrastEmmean_df.Rdata"))
+
+
+
+# Females vs Males - Sex Contrast
+sexContrast <- subset(sexContrast_df, contrast == "female - male")
+sexContrast$p.adj <- p.adjust(sexContrast$p.value, method = 'BH')
+
+sexMale <- subset(sexContrastEmmean_df, sexContrastEmmean_df$sex == "male")
+sexFemale <- subset(sexContrastEmmean_df, sexContrastEmmean_df$sex == "female")
+meanSex <- sexMale
+
+meanSex$emmean <- (sexMale$emmean + sexFemale$emmean) / 2
+mean <- meanSex
+contrast <- sexContrast
+
+
+
+  mergeFrame <- merge(mean, contrast, by = c("geneID"))
+  xAxis <- mergeFrame$emmean
+  yAxis <- mergeFrame$estimate
+  mergeFrame <- cbind(mergeFrame, yAxis)
+  mergeFrame <- cbind(mergeFrame, xAxis)
+  
+  sig_points <- mergeFrame[mergeFrame$gene %in% sex_anova_subset$gene, ]
+  `%notin%` <- Negate(`%in%`)
+  regular_points <- mergeFrame[mergeFrame$gene %notin% sex_anova_subset$gene, ]
+  
+femaleVsMale_MAPlot <-  ggplot() + 
+    geom_point(data = regular_points, aes(xAxis, yAxis, color = "blue"), alpha = .1) +
+    geom_point(data = sig_points, aes(xAxis, yAxis, color = "red"), alpha = 0.7) +
+   # geom_point(aes(color = col, alpha = alpha) ) +
+    xlab(expression("Mean Average (" * log[2] * CPM * ")")) +
+    ylab(expression("Mean Difference (" * log[2] * CPM * ")")) +
+    scale_color_identity() + 
+    theme_classic() +
+    theme(legend.position="none", plot.title = element_text(face = "bold"))
+
+
+## with emmeans_subset created can instead do
+## low vs high
+
+selectionContrast <- subset(selectionContrast_df, contrast == "down - up")
+
+
+downSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "down")
+upSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "up")
+meanSelection <- downSelection
+
+meanSelection$emmean <- (downSelection$emmean + upSelection$emmean) / 2
+
+
+
+mean <- meanSelection
+contrast <- selectionContrast
+
+
+
+  mergeFrame <- merge(mean, contrast, by = c("geneID"))
+  xAxis <- mergeFrame$emmean
+  yAxis <- mergeFrame$estimate
+  mergeFrame <- cbind(mergeFrame, yAxis)
+  mergeFrame <- cbind(mergeFrame, xAxis)
+  
+  sig_points <- mergeFrame[mergeFrame$gene %in% upVdown_subset$geneID, ]
+  `%notin%` <- Negate(`%in%`)
+  regular_points <- mergeFrame[mergeFrame$gene %notin% upVdown_subset$geneID, ]
+  
+lowVhigh <-  ggplot() + 
+    geom_point(data = regular_points, aes(xAxis, yAxis, color = "blue"), alpha = .1) +
+    geom_point(data = sig_points, aes(xAxis, yAxis, color = "red"), alpha = 0.7) +
+   # geom_point(aes(color = col, alpha = alpha) ) +
+    xlab(expression("Mean Average (" * log[2] * CPM * ")")) +
+    ylab(expression("Mean Difference (" * log[2] * CPM * ")")) +
+    scale_color_identity() + 
+    theme_classic() +
+    theme(legend.position="none", plot.title = element_text(face = "bold"))  +
+    ggtitle("Low versus High") 
+
+
+
+
+
+
+
+
+
+
+## down vs control
+
+selectionContrast <- subset(selectionContrast_df, contrast == "down - control")
+
+
+downSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "down")
+upSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "control")
+meanSelection <- downSelection
+
+meanSelection$emmean <- (downSelection$emmean + upSelection$emmean) / 2
+
+
+
+mean <- meanSelection
+contrast <- selectionContrast
+
+
+
+  mergeFrame <- merge(mean, contrast, by = c("geneID"))
+  xAxis <- mergeFrame$emmean
+  yAxis <- mergeFrame$estimate
+  mergeFrame <- cbind(mergeFrame, yAxis)
+  mergeFrame <- cbind(mergeFrame, xAxis)
+  
+  sig_points <- mergeFrame[mergeFrame$gene %in% downVcontrol_subset$geneID, ]
+  `%notin%` <- Negate(`%in%`)
+  regular_points <- mergeFrame[mergeFrame$gene %notin% downVcontrol_subset$geneID, ]
+  
+lowVcont <-  ggplot() + 
+    geom_point(data = regular_points, aes(xAxis, yAxis, color = "blue"), alpha = .1) +
+    geom_point(data = sig_points, aes(xAxis, yAxis, color = "red"), alpha = 0.7) +
+   # geom_point(aes(color = col, alpha = alpha) ) +
+    xlab(expression("Mean Average (" * log[2] * CPM * ")")) +
+    ylab(expression("Mean Difference (" * log[2] * CPM * ")")) +
+    scale_color_identity() + 
+    theme_classic() +
+    theme(legend.position="none", plot.title = element_text(face = "bold"))  +
+    ggtitle("Low versus Control") 
+
+
+
+
+
+## Control vs High
+
+selectionContrast <- subset(selectionContrast_df, contrast == "control - up")
+
+
+downSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "control")
+upSelection <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$selection == "up")
+meanSelection <- downSelection
+
+meanSelection$emmean <- (downSelection$emmean + upSelection$emmean) / 2
+
+
+
+mean <- meanSelection
+contrast <- selectionContrast
+
+
+
+  mergeFrame <- merge(mean, contrast, by = c("geneID"))
+  xAxis <- mergeFrame$emmean
+  yAxis <- mergeFrame$estimate
+  mergeFrame <- cbind(mergeFrame, yAxis)
+  mergeFrame <- cbind(mergeFrame, xAxis)
+  
+  sig_points <- mergeFrame[mergeFrame$gene %in% controlVup_subset$geneID, ]
+  `%notin%` <- Negate(`%in%`)
+  regular_points <- mergeFrame[mergeFrame$gene %notin% controlVup_subset$geneID, ]
+  
+ContVHigh <-  ggplot() + 
+    geom_point(data = regular_points, aes(xAxis, yAxis, color = "blue"), alpha = .1) +
+    geom_point(data = sig_points, aes(xAxis, yAxis, color = "red"), alpha = 0.7) +
+   # geom_point(aes(color = col, alpha = alpha) ) +
+    xlab(expression("Mean Average (" * log[2] * CPM * ")")) +
+    ylab(expression("Mean Difference (" * log[2] * CPM * ")")) +
+    scale_color_identity() + 
+    theme_classic() +
+    theme(legend.position="none", plot.title = element_text(face = "bold"))  +
+    ggtitle("Control versus High") 
+    
+
+
+
+plot_grid(lowVcont, 
+          lowVhigh,
+          ContVHigh,
+          labels = c("A)", "B)", "C)"),
+          label_size = 12,
+          nrow = 2,
+          ncol = 2)
+
+```
+
+## Figure 3 - Sex and Selection Reactions Norms
+
+```{r, Figure 3 set up}
+#To where quant folder is
+setwd("/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data")
+quant_files <- file.path("quants", list.files("quants"), "quant.sf")
+samples <- quant_files
+samples <- substring(samples, 8, 26) #grab just sample name from the file name
+
+names(quant_files) <- samples
+
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
+k <- keys(txdb, keytype = "TXNAME")
+tx2gene <- AnnotationDbi::select(x = txdb, keys = k, "GENEID", "TXNAME")
+
+txi <- tximport(quant_files, type = "salmon", tx2gene = tx2gene)
+
+selection <- substring(samples, 4, 4)
+selection <- gsub("C", "control", selection)
+selection <- gsub("D", "down", selection)
+selection <- gsub("U", "up", selection)
+selection <- as.factor(selection)
+
+
+lineage <- substring(samples, 7, 7)
+lineage <- as.factor(lineage)
+
+sex <- substring(samples, 9, 9)
+sex <- gsub("F", "female", sex)
+sex <- gsub("M", "male", sex)
+sex <- as.factor(sex)
+
+expMatched <- substring(samples, 11, 11)
+expMatched <- gsub("S", "socArena", expMatched)
+expMatched <- gsub("V", "vial", expMatched)
+expMatched <- as.factor(expMatched)
+
+
+lane <- substring(samples, 19, 19)
+lane <- factor(lane)
+
+rna.design <- data.frame(sample = samples, 
+                         file = quant_files,
+                         selection = selection,
+                         sex = sex,
+                         expMatched = expMatched,
+                         lane = lane,
+                         lineage = lineage)
+
+dgeList <- DGEList(txi$counts)
+
+design <- model.matrix(~ lane + lineage + sex + expMatched +
+                         selection + sex:expMatched + selection:expMatched + 
+                         selection:sex,
+                       data = rna.design)
+
+keep2 <- filterByExpr(dgeList, design)
+dgeList <- dgeList[keep2, ]
+
+# normalize and run voom transformation
+dgeList <- calcNormFactors(dgeList)
+
+v <- voom(dgeList, design)
+voomCPM <- v$E
+sample_info <- rna.design[, -c(1:2)]
+```
+
+```{r, Figure 3 plot function sex and selection}
+geneDictionary <- read.delim(file = "/Users/arteen/Downloads/FlyGeneDictionary.txt")
+geneDictionary$FBgnID <- geneDictionary$validated_id
+
+
+selectionSexPairEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionSexPairEmmean_df.Rdata"))
+
+
+selectionSexPairEmmean_df$selection <- relevel(as.factor(selectionSexPairEmmean_df$selection), ref = "down")
+
+xAxis <- selectionSexPairEmmean_df$selection
+
+xAxis <- gsub("down", 1, xAxis)
+xAxis <- gsub("control", 2, xAxis)
+xAxis <- gsub("up", 3, xAxis)
+xAxis <- as.numeric(xAxis)
+  
+selectionSexPairEmmean_df$xAxis <- xAxis
+  
+sample_info_xAxis <- sample_info$selection
+
+sample_info_xAxis <- gsub("down", 1, sample_info_xAxis)
+sample_info_xAxis <- gsub("control", 2, sample_info_xAxis)
+sample_info_xAxis <- gsub("up", 3, sample_info_xAxis)
+
+sample_info_xAxis <- as.numeric(sample_info_xAxis)
+
+sample_info$xAxis <- sample_info_xAxis
+
+emmeanPlot <- function(gene){
+  
+  # Gene dictionary
+  rowIndex <- which(geneDictionary$validated_id == gene)
+  geneName <- geneDictionary[rowIndex, 3]
+  if (length(geneName) == 0){ # if the gene name isnt in the dictionary
+  geneName <- gene
+  }
+  
+  # For jitter of points
+  cpmCounts <- c(voomCPM[gene,])
+  sample_infoCounts <- sample_info
+  sample_infoCounts$counts <- cpmCounts
+  
+  # For emmeans points
+  to_plot <- subset(selectionSexPairEmmean_df, selectionSexPairEmmean_df$geneID == gene)
+  to_plot$group <-paste(to_plot$sex, to_plot$expMatched, sep="")
+  
+  pd = position_dodge(width = 0.3)
+  
+  # Actual plotting
+  ggplot() +
+    geom_point(data = to_plot, aes(x = xAxis, y = emmean, color = sex), size = 1, position = pd) +
+    
+    geom_errorbar(data = to_plot, 
+                  aes(x = xAxis, y = emmean, ymin = lower.CL, ymax = upper.CL, color = sex), width = 0, position = pd, alpha = 0.65) +
+    
+    geom_line(data = to_plot,
+              aes(x = xAxis, y = emmean, color = sex), position = pd, alpha = 0.65) +
+    
+    geom_jitter(data = sample_infoCounts,
+                aes(x = xAxis, y = counts, color = sex), alpha = 0.15, height = 0, width = 0.15, size = 0.75) +
+    
+    scale_x_continuous(name = "Selection", breaks = c(1.0, 2.0, 3.0),
+                       labels = c("Low", "Control", "High")) +
+    
+    ylab(expression(log[2](cpm))) +
+    ggtitle(geneName) + 
+    theme_classic() +
+    theme(legend.position = "none", plot.title = element_text(face = "italic"))
+  
+}
+```
+
+```{r, selection Only plotting}
+
+geneDictionary <- read.delim(file = "/Users/arteen/Downloads/FlyGeneDictionary.txt")
+geneDictionary$FBgnID <- geneDictionary$validated_id
+
+
+selectionContrastEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/selectionContrastEmmean_df.Rdata"))
+
+
+selectionContrastEmmean_df$selection <- relevel(as.factor(selectionContrastEmmean_df$selection), ref = "down")
+
+xAxis <- selectionContrastEmmean_df$selection
+
+xAxis <- gsub("down", 1, xAxis)
+xAxis <- gsub("control", 2, xAxis)
+xAxis <- gsub("up", 3, xAxis)
+xAxis <- as.numeric(xAxis)
+  
+selectionContrastEmmean_df$xAxis <- xAxis
+  
+sample_info_xAxis <- sample_info$selection
+
+sample_info_xAxis <- gsub("down", 1, sample_info_xAxis)
+sample_info_xAxis <- gsub("control", 2, sample_info_xAxis)
+sample_info_xAxis <- gsub("up", 3, sample_info_xAxis)
+
+sample_info_xAxis <- as.numeric(sample_info_xAxis)
+
+sample_info$xAxis <- sample_info_xAxis
+
+emmeanPlot_selection <- function(gene){
+  
+  # Gene dictionary
+  rowIndex <- which(geneDictionary$validated_id == gene)
+  geneName <- geneDictionary[rowIndex, 3]
+  if (length(geneName) == 0){ # if the gene name isnt in the dictionary
+  geneName <- gene
+  }
+  
+  # For jitter of points
+  cpmCounts <- c(voomCPM[gene,])
+  sample_infoCounts <- sample_info
+  sample_infoCounts$counts <- cpmCounts
+  
+  # For emmeans points
+  to_plot <- subset(selectionContrastEmmean_df, selectionContrastEmmean_df$geneID == gene)
+  
+  
+  pd = position_dodge(width = 0.3)
+  
+  # Actual plotting
+  ggplot() +
+    geom_point(data = to_plot, aes(x = xAxis, y = emmean), size = 1.5, position = pd) +
+    
+    geom_errorbar(data = to_plot, 
+                  aes(x = xAxis, y = emmean, ymin = lower.CL, ymax = upper.CL), width = 0.075, position = pd, alpha = 1) +
+    
+    geom_line(data = to_plot,
+              aes(x = xAxis, y = emmean), position = pd, alpha = 0.65) +
+    
+    geom_jitter(data = sample_infoCounts,
+                aes(x = xAxis, y = counts, color = lineage), alpha = 0.3, height = 0, width = 0.15, size = 0.5) +
+    
+    scale_x_continuous(name = "", breaks = c(1.0, 2.0, 3.0),
+                       labels = c("Low", "Control", "High")) +
+    ylab("") +
+    #ylab(expression(log[2](CPM))) +
+    ggtitle(geneName) + 
+    theme_classic() +
+    theme( legend.position = "none", plot.title = element_text(face = "italic"), axis.text = element_text(face = "bold")) 
+    #theme(plot.title = element_text(face = "italic"), axis.text = element_text(face = "bold"))
+   
+    
+}
+```
+
+```{r, Figure 3 plot function exp and selection}
+geneDictionary <- read.delim(file = "/Users/arteen/Downloads/FlyGeneDictionary.txt")
+geneDictionary$FBgnID <- geneDictionary$validated_id
+
+
+expSexPairEmmean_df <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_downVup/expSelectionPairEmmean_df.Rdata"))
+
+
+xAxis <- expSexPairEmmean_df$selection
+
+xAxis <- gsub("down", 1, xAxis)
+xAxis <- gsub("control", 2, xAxis)
+xAxis <- gsub("up", 3, xAxis)
+xAxis <- as.numeric(xAxis)
+  
+expSexPairEmmean_df$xAxis <- xAxis
+  
+sample_info_xAxis <- sample_info$selection
+
+sample_info_xAxis <- gsub("down", 1, sample_info_xAxis)
+sample_info_xAxis <- gsub("control", 2, sample_info_xAxis)
+sample_info_xAxis <- gsub("up", 3, sample_info_xAxis)
+
+sample_info_xAxis <- as.numeric(sample_info_xAxis)
+
+sample_info$xAxis <- sample_info_xAxis
+
+emmeanPlot_expInt <- function(gene){
+  
+  # Gene dictionary
+  rowIndex <- which(geneDictionary$validated_id == gene)
+  geneName <- geneDictionary[rowIndex, 3]
+  if (length(geneName) == 0){ # if the gene name isnt in the dictionary
+  geneName <- gene
+  }
+  
+  # For jitter of points
+  cpmCounts <- c(voomCPM[gene,])
+  sample_infoCounts <- sample_info
+  sample_infoCounts$counts <- cpmCounts
+  
+  # For emmeans points
+  to_plot <- subset(expSexPairEmmean_df, expSexPairEmmean_df$geneID == gene)
+  to_plot$group <-paste(to_plot$sex, to_plot$expMatched, sep="")
+  
+  pd = position_dodge(width = 0.3)
+  
+  # Actual plotting
+  ggplot() +
+    geom_point(data = to_plot, aes(x = xAxis, y = emmean, color = expMatched), size = 1, position = pd) +
+    
+    geom_errorbar(data = to_plot, 
+                  aes(x = xAxis, y = emmean, ymin = lower.CL, ymax = upper.CL, color = expMatched), width = 0, position = pd, alpha = 0.65) +
+    
+    geom_line(data = to_plot,
+              aes(x = xAxis, y = emmean, color = expMatched), position = pd, alpha = 0.65) +
+    
+    geom_jitter(data = sample_infoCounts,
+                aes(x = xAxis, y = counts, color = expMatched), alpha = 0.15, height = 0, width = 0.15, size = 0.75) +
+    
+    scale_x_continuous(name = "Selection", breaks = c(1.0, 2.0, 3.0),
+                       labels = c("Low", "Control", "High")) +
+    
+    ylab(expression(log[2](cpm))) +
+    ggtitle(geneName) + 
+    theme_classic() +
+    theme( plot.title = element_text(face = "italic"))
+  
+}
+```
+
+
+```{r, Figure 3 Actual Plotting}
+
+## Top Ten FC
+
+#for_legend <- emmeanPlot_selection("FBgn0053497")
+FBgn0053497_selection <- emmeanPlot_selection("FBgn0053497")
+FBgn0051231_selection <- emmeanPlot_selection("FBgn0051231")
+FBgn0052650_selection <- emmeanPlot_selection("FBgn0052650")
+FBgn0053837_selection <- emmeanPlot_selection("FBgn0053837")
+FBgn0020643_selection <- emmeanPlot_selection("FBgn0020643")
+#FBgn0036767_selection <- emmeanPlot_selection("FBgn0036767") # no italics
+FBgn0035642_selection <- emmeanPlot_selection("FBgn0035642")
+FBgn0038565_selection <- emmeanPlot_selection("FBgn0038565")
+#FBgn0046880_selection <- emmeanPlot_selection("FBgn0046880") # w axis labels
+#FBgn0038527_selection <- emmeanPlot_selection("FBgn0038527") # no italics
+FBgn0262036_selection <- emmeanPlot_selection("FBgn0262036")
+#FBgn0038866_selection <- emmeanPlot_selection("FBgn0038866") # w legend no italics
+
+#legend <- cowplot::get_legend(for_legend)
+#legend
+plot_grid(FBgn0053497_selection, FBgn0051231_selection,
+          FBgn0052650_selection, FBgn0053837_selection,
+          FBgn0020643_selection, FBgn0036767_selection,
+          FBgn0035642_selection, FBgn0038565_selection,
+          FBgn0046880_selection, FBgn0038527_selection,
+          FBgn0262036_selection, FBgn0038866_selection,
+          nrow = 3, ncol = 4)
+
+## Rel pheno genes
+
+FBgn0010222_selection <- emmeanPlot_selection("FBgn0010222")
+FBgn0015773_selection <- emmeanPlot_selection("FBgn0015773")
+FBgn0033885_selection <- emmeanPlot_selection("FBgn0033885")
+FBgn0036150_selection <- emmeanPlot_selection("FBgn0036150")
+FBgn0030795_selection <- emmeanPlot_selection("FBgn0030795")
+FBgn0032484_selection <- emmeanPlot_selection("FBgn0032484")
+FBgn0037217_selection <- emmeanPlot_selection("FBgn0037217")
+FBgn0031435_selection <- emmeanPlot_selection("FBgn0031435")
+#FBgn0027783_selection <- emmeanPlot_selection("FBgn0027783") # w axis titles
+FBgn0016672_selection <- emmeanPlot_selection("FBgn0016672")
+FBgn0261563_selection <- emmeanPlot_selection("FBgn0261563")
+#FBgn0003174_selection <- emmeanPlot_selection("FBgn0003174") # w legend
+
+
+plot_grid(FBgn0010222_selection, FBgn0015773_selection,
+          FBgn0033885_selection, FBgn0036150_selection,
+          FBgn0030795_selection, FBgn0032484_selection,
+          FBgn0037217_selection, FBgn0031435_selection,
+          FBgn0027783_selection, FBgn0016672_selection,
+          FBgn0261563_selection, FBgn0003174_selection,
+          nrow = 3, ncol = 4)
+
+
+#
+
+#UK BioBank Genes
+
+FBgn0086675_selection <- emmeanPlot_selection("FBgn0086675")# ELAVL2
+FBgn0023094_selection <- emmeanPlot_selection("FBgn0023094") # ARNTL
+FBgn0053517_selection <- emmeanPlot_selection("FBgn0053517") # DRD2
+FBgn0016754_selection <- emmeanPlot_selection("FBgn0016754")
+FBgn0014859_selection <- emmeanPlot_selection("FBgn0014859")
+FBgn0004666_selection <- emmeanPlot_selection("FBgn0004666")
+#FBgn0034308_selection <- emmeanPlot_selection("FBgn0034308")
+##FBgn0085478_selection <- emmeanPlot_selection("FBgn0085478")
+
+plot_grid(FBgn0086675_selection, FBgn0023094_selection,
+          FBgn0053517_selection, FBgn0016754_selection,
+          
+          FBgn0014859_selection, FBgn0004666_selection,FBgn0034308_selection,
+         FBgn0085478_selection,
+          nrow = 4, ncol = 2)
+
+
+
+
+
+
+```
+
+
+
+
+
+## Figure S1
+```{r}
+
+```
+
+```{r, Figure S2 set up Gauss}
+
+gauss <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/gauss_cpm.genes.check.Rdata"))
+
+intercept.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][1,1],
+                     StdError = gauss[g][[1]][[1]][1,2],
+                     P = gauss[g][[1]][[1]][1,4],
+                     Model = gauss[g][[1]][[2]])
+    intercept.gauss.estimates <- rbind(intercept.gauss.estimates, df)
+}
+male.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][3,1],
+                     StdError = gauss[g][[1]][[1]][3,2],
+                     P = gauss[g][[1]][[1]][3,4],
+                     Model = gauss[g][[1]][[2]])
+    male.gauss.estimates <- rbind(male.gauss.estimates, df)
+}
+vial.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][4,1],
+                     StdError = gauss[g][[1]][[1]][4,2],
+                     P = gauss[g][[1]][[1]][4,4],
+                     Model = gauss[g][[1]][[2]])
+    vial.gauss.estimates <- rbind(vial.gauss.estimates, df)
+}
+sel.down.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][5,1],
+                     StdError = gauss[g][[1]][[1]][5,2],
+                     P = gauss[g][[1]][[1]][5,4],
+                     Model = gauss[g][[1]][[2]])
+    sel.down.gauss.estimates <- rbind(sel.down.gauss.estimates, df)
+}
+sel.up.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][6,1],
+                     StdError = gauss[g][[1]][[1]][6,2],
+                     P = gauss[g][[1]][[1]][6,4],
+                     Model = gauss[g][[1]][[2]])
+    sel.up.gauss.estimates <- rbind(sel.up.gauss.estimates, df)
+}
+male.vial.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][7,1],
+                     StdError = gauss[g][[1]][[1]][7,2],
+                     P = gauss[g][[1]][[1]][7,4],
+                     Model = gauss[g][[1]][[2]])
+    male.vial.gauss.estimates <- rbind(male.vial.gauss.estimates, df)
+}
+vial.down.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][8,1],
+                     StdError = gauss[g][[1]][[1]][8,2],
+                     P = gauss[g][[1]][[1]][8,4],
+                     Model = gauss[g][[1]][[2]])
+    vial.down.gauss.estimates <- rbind(vial.down.gauss.estimates, df)
+}
+vial.up.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][9,1],
+                     StdError = gauss[g][[1]][[1]][9,2],
+                     P = gauss[g][[1]][[1]][9,4],
+                     Model = gauss[g][[1]][[2]])
+    vial.up.gauss.estimates <- rbind(vial.up.gauss.estimates, df)
+}
+male.down.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][10,1],
+                     StdError = gauss[g][[1]][[1]][10,2],
+                     P = gauss[g][[1]][[1]][10,4],
+                     Model = gauss[g][[1]][[2]])
+    male.down.gauss.estimates <- rbind(male.down.gauss.estimates, df)
+}
+male.up.gauss.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(gauss)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = gauss[g][[1]][[1]][11,1],
+                     StdError = gauss[g][[1]][[1]][11,2],
+                     P = gauss[g][[1]][[1]][11,4],
+                     Model = gauss[g][[1]][[2]])
+    male.up.gauss.estimates <- rbind(male.up.gauss.estimates, df)
+}
+```
+
+```{r, Figure S2 set up Limma}
+
+#Fitting
+fit <- lmFit(v, design)
+fit <- eBayes(fit)
+
+intercept.limma <- topTable(fit, coef = 1, sort.by = "none", n = Inf)
+male.limma <- topTable(fit, coef = 6, sort.by = "none", n = Inf)
+vial.limma <- topTable(fit, coef = 7, sort.by = "none", n = Inf)
+sel.down.limma <- topTable(fit, coef = 8, sort.by = "none", n = Inf)
+sel.up.limma <- topTable(fit, coef = 9, sort.by = "none", n = Inf)
+male.vial.limma <- topTable(fit, coef = 10, sort.by = "none", n = Inf)
+vial.down.limma <- topTable(fit, coef = 11, sort.by = "none", n = Inf)
+vial.up.limma <- topTable(fit, coef = 12, sort.by = "none", n = Inf)
+male.down.limma <- topTable(fit, coef = 13, sort.by = "none", n = Inf)
+male.up.limma <- topTable(fit, coef = 14, sort.by = "none", n = Inf)
+```
+
+```{r, Figure S3 set up NBINOM}
+nbinom <- get(load(file = "/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data/nbinom_cpm.genes.check.Rdata"))
+
+intercept.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][1,1],
+                     StdError = nbinom[g][[1]][[1]][1,2],
+                     P = nbinom[g][[1]][[1]][1,4],
+                     Model = nbinom[g][[1]][[2]])
+    intercept.nbinom.estimates <- rbind(intercept.nbinom.estimates, df)
+}
+male.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][3,1],
+                     StdError = nbinom[g][[1]][[1]][3,2],
+                     P = nbinom[g][[1]][[1]][3,4],
+                     Model = nbinom[g][[1]][[2]])
+    male.nbinom.estimates <- rbind(male.nbinom.estimates, df)
+}
+vial.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][4,1],
+                     StdError = nbinom[g][[1]][[1]][4,2],
+                     P = nbinom[g][[1]][[1]][4,4],
+                     Model = nbinom[g][[1]][[2]])
+    vial.nbinom.estimates <- rbind(vial.nbinom.estimates, df)
+}
+sel.down.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][5,1],
+                     StdError = nbinom[g][[1]][[1]][5,2],
+                     P = nbinom[g][[1]][[1]][5,4],
+                     Model = nbinom[g][[1]][[2]])
+    sel.down.nbinom.estimates <- rbind(sel.down.nbinom.estimates, df)
+}
+sel.up.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][6,1],
+                     StdError = nbinom[g][[1]][[1]][6,2],
+                     P = nbinom[g][[1]][[1]][6,4],
+                     Model = nbinom[g][[1]][[2]])
+    sel.up.nbinom.estimates <- rbind(sel.up.nbinom.estimates, df)
+}
+male.vial.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][7,1],
+                     StdError = nbinom[g][[1]][[1]][7,2],
+                     P = nbinom[g][[1]][[1]][7,4],
+                     Model = nbinom[g][[1]][[2]])
+    male.vial.nbinom.estimates <- rbind(male.vial.nbinom.estimates, df)
+}
+vial.down.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][8,1],
+                     StdError = nbinom[g][[1]][[1]][8,2],
+                     P = nbinom[g][[1]][[1]][8,4],
+                     Model = nbinom[g][[1]][[2]])
+    vial.down.nbinom.estimates <- rbind(vial.down.nbinom.estimates, df)
+}
+vial.up.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][9,1],
+                     StdError = nbinom[g][[1]][[1]][9,2],
+                     P = nbinom[g][[1]][[1]][9,4],
+                     Model = nbinom[g][[1]][[2]])
+    vial.up.nbinom.estimates <- rbind(vial.up.nbinom.estimates, df)
+}
+male.down.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][10,1],
+                     StdError = nbinom[g][[1]][[1]][10,2],
+                     P = nbinom[g][[1]][[1]][10,4],
+                     Model = nbinom[g][[1]][[2]])
+    male.down.nbinom.estimates <- rbind(male.down.nbinom.estimates, df)
+}
+male.up.nbinom.estimates <- data.frame(FBgnID = character(), Estimate = double(),
+                                        StdError = double(), P = double(), Model = character())
+for (g in names(nbinom)) {
+    df <- data.frame(FBgnID = g,
+                     Estimate = nbinom[g][[1]][[1]][11,1],
+                     StdError = nbinom[g][[1]][[1]][11,2],
+                     P = nbinom[g][[1]][[1]][11,4],
+                     Model = nbinom[g][[1]][[2]])
+    male.up.nbinom.estimates <- rbind(male.up.nbinom.estimates, df)
+}
+```
+
+```{r, Plotting df setup S2 and S3}
+intercept.plotting_df <- data.frame(FBgnID = intercept.gauss.estimates$FBgnID,
+                                    Limma = intercept.limma$logFC,
+                                    Gauss = intercept.gauss.estimates$Estimate,
+                                    Nbinom = intercept.nbinom.estimates$Estimate)
+intercept.plotting_df <- subset(intercept.plotting_df, Nbinom > -10)
+intercept.plotting_df <- subset(intercept.plotting_df, Nbinom < 10)
+
+male.plotting_df <- data.frame(FBgnID = male.gauss.estimates$FBgnID,
+                                    Limma = male.limma$logFC,
+                                    Gauss = male.gauss.estimates$Estimate,
+                                    Nbinom = male.nbinom.estimates$Estimate)
+male.plotting_df <- subset(male.plotting_df, Nbinom > -10)
+male.plotting_df <- subset(male.plotting_df, Nbinom < 10)
+
+vial.plotting_df <- data.frame(FBgnID = vial.gauss.estimates$FBgnID,
+                                    Limma = vial.limma$logFC,
+                                    Gauss = vial.gauss.estimates$Estimate,
+                                    Nbinom = vial.nbinom.estimates$Estimate)
+vial.plotting_df <- subset(vial.plotting_df, Nbinom > -10)
+vial.plotting_df <- subset(vial.plotting_df, Nbinom < 10)
+
+sel.down.plotting_df <- data.frame(FBgnID = sel.down.gauss.estimates$FBgnID,
+                                    Limma = sel.down.limma$logFC,
+                                    Gauss = sel.down.gauss.estimates$Estimate,
+                                    Nbinom = sel.down.nbinom.estimates$Estimate)
+sel.down.plotting_df <- subset(sel.down.plotting_df, Nbinom > -10)
+sel.down.plotting_df <- subset(sel.down.plotting_df, Nbinom < 10)
+
+sel.up.plotting_df <- data.frame(FBgnID = sel.up.gauss.estimates$FBgnID,
+                                    Limma = sel.up.limma$logFC,
+                                    Gauss = sel.up.gauss.estimates$Estimate,
+                                    Nbinom = sel.up.nbinom.estimates$Estimate)
+sel.up.plotting_df <- subset(sel.up.plotting_df, Nbinom > -10)
+sel.up.plotting_df <- subset(sel.up.plotting_df, Nbinom < 10)
+
+male.vial.plotting_df <- data.frame(FBgnID = male.vial.gauss.estimates$FBgnID,
+                                    Limma = male.vial.limma$logFC,
+                                    Gauss = male.vial.gauss.estimates$Estimate,
+                                    Nbinom = male.vial.nbinom.estimates$Estimate)
+male.vial.plotting_df <- subset(male.vial.plotting_df, Nbinom > -10)
+male.vial.plotting_df <- subset(male.vial.plotting_df, Nbinom < 10)
+
+vial.down.plotting_df <- data.frame(FBgnID = vial.down.gauss.estimates$FBgnID,
+                                    Limma = vial.down.limma$logFC,
+                                    Gauss = vial.down.gauss.estimates$Estimate,
+                                    Nbinom = vial.down.nbinom.estimates$Estimate)
+vial.down.plotting_df <- subset(vial.down.plotting_df, Nbinom > -10)
+vial.down.plotting_df <- subset(vial.down.plotting_df, Nbinom < 10)
+
+vial.up.plotting_df <- data.frame(FBgnID = vial.up.gauss.estimates$FBgnID,
+                                    Limma = vial.up.limma$logFC,
+                                    Gauss = vial.up.gauss.estimates$Estimate,
+                                    Nbinom = vial.up.nbinom.estimates$Estimate)
+vial.up.plotting_df <- subset(vial.up.plotting_df, Nbinom > -10)
+vial.up.plotting_df <- subset(vial.up.plotting_df, Nbinom < 10)
+
+male.down.plotting_df <- data.frame(FBgnID = male.down.gauss.estimates$FBgnID,
+                                    Limma = male.down.limma$logFC,
+                                    Gauss = male.down.gauss.estimates$Estimate,
+                                    Nbinom = male.down.nbinom.estimates$Estimate)
+male.down.plotting_df <- subset(male.down.plotting_df, Nbinom > -10)
+male.down.plotting_df <- subset(male.down.plotting_df, Nbinom < 10)
+
+male.up.plotting_df <- data.frame(FBgnID = male.up.gauss.estimates$FBgnID,
+                                    Limma = male.up.limma$logFC,
+                                    Gauss = male.up.gauss.estimates$Estimate,
+                                    Nbinom = male.up.nbinom.estimates$Estimate)
+male.up.plotting_df <- subset(male.up.plotting_df, Nbinom > -10)
+male.up.plotting_df <- subset(male.up.plotting_df, Nbinom < 10)
+
+```
+
+```{r}
+
+## Cor testing
+
+## Limma gauss
+## Gauss nbinom
+
+LimmaGauss_confInt_df <- data.frame(Method = character(),
+                                    Correlation = double(),
+                                    ConfInt_Lower = double(),
+                                    confInt_Upper = double())
+
+gaussNbinom_confInt_df <- data.frame(Method = character(),
+                                     Correlation = double(),
+                                    ConfInt_Lower = double(),
+                                    confInt_Upper = double())
+
+#Intercept
+
+limmaGauss_cor_test <- cor.test(intercept.plotting_df$Limma, intercept.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "intercept.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(intercept.plotting_df$Gauss, intercept.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "intercept.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+
+
+# male.plotting_df
+
+
+limmaGauss_cor_test <- cor.test(male.plotting_df$Limma, male.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "male.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(male.plotting_df$Gauss, male.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "male.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+
+
+
+
+#
+
+# 
+# vial.plotting_df
+
+limmaGauss_cor_test <- cor.test(vial.plotting_df$Limma, vial.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "vial.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(vial.plotting_df$Gauss, vial.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "vial.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# 
+# 
+# sel.down.plotting_df
+
+limmaGauss_cor_test <- cor.test(sel.down.plotting_df$Limma, sel.down.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "sel.down.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(sel.down.plotting_df$Gauss, sel.down.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "sel.down.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# 
+# sel.up.plotting_df
+
+limmaGauss_cor_test <- cor.test(sel.up.plotting_df$Limma, sel.up.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "sel.up.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(sel.up.plotting_df$Gauss, sel.up.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "sel.up.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# male.vial.plotting_df
+
+limmaGauss_cor_test <- cor.test(male.vial.plotting_df$Limma, male.vial.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "male.vial.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(male.vial.plotting_df$Gauss, male.vial.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "male.vial.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# 
+# vial.down.plotting_df
+
+limmaGauss_cor_test <- cor.test(vial.down.plotting_df$Limma, vial.down.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "vial.down.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(vial.down.plotting_df$Gauss, vial.down.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "vial.down.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# vial.up.plotting_df
+
+limmaGauss_cor_test <- cor.test(vial.up.plotting_df$Limma, vial.up.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "vial.up.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(vial.up.plotting_df$Gauss, vial.up.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "vial.up.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# 
+# 
+# male.down.plotting_df
+
+limmaGauss_cor_test <- cor.test(male.down.plotting_df$Limma, male.down.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "male.down.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(male.down.plotting_df$Gauss, male.down.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "male.down.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+# 
+# 
+# 
+# male.up.plotting_df
+
+limmaGauss_cor_test <- cor.test(male.up.plotting_df$Limma, male.up.plotting_df$Gauss)
+limmaGauss_confint <- limmaGauss_cor_test$conf.int
+limmaGauss_cor <- as.double(limmaGauss_cor_test$estimate)
+limmaGauss_add <- data.frame(Method = "male.up.plotting_df",
+                             Correlation = limmaGauss_cor,
+                             ConfInt_Lower = limmaGauss_confint[1],
+                             confInt_Upper = limmaGauss_confint[2] )
+LimmaGauss_confInt_df <- rbind(LimmaGauss_confInt_df, limmaGauss_add)
+
+
+gaussNbinom_cor_test <- cor.test(male.up.plotting_df$Gauss, male.up.plotting_df$Nbinom)
+gaussNbinom_confint <- gaussNbinom_cor_test$conf.int
+gaussNbinom_cor <- as.double(gaussNbinom_cor_test$estimate)
+gaussNbinom_add <- data.frame(Method = "male.up.plotting_df",
+                              Correlation = gaussNbinom_cor,
+                             ConfInt_Lower = gaussNbinom_confint[1],
+                             confInt_Upper = gaussNbinom_confint[2] )
+gaussNbinom_confInt_df <- rbind(gaussNbinom_confInt_df, gaussNbinom_add)
+
+
+names(gaussNbinom_confInt_df)[1] <- "Model Term"
+names(gaussNbinom_confInt_df)[2] <- "r"
+names(gaussNbinom_confInt_df)[3] <- "Lower"
+names(gaussNbinom_confInt_df)[4] <- "Upper"
+names(LimmaGauss_confInt_df)[1] <- "Model Term"
+names(LimmaGauss_confInt_df)[2] <- "r"
+names(LimmaGauss_confInt_df)[3] <- "Lower"
+names(LimmaGauss_confInt_df)[4] <- "Upper"
+write.table(x = gaussNbinom_confInt_df, file = "/Users/arteen/Desktop/School/Thesis_Writing/Figures_and_Tables/gaussNbinom_correlation_confInt.txt",
+            row.names = FALSE, quote = FALSE, sep = ",")
+write.table(x = LimmaGauss_confInt_df, file = "/Users/arteen/Desktop/School/Thesis_Writing/Figures_and_Tables/limmaGauss_correlation_confInt.txt",
+            row.names = FALSE, quote = FALSE, sep = ",")
+
+```
+
+
+
+
+
+## Figure S2 - Limma Gauss Comparison
+```{r, Plot Figure S2}
+S2.intercept <- ggplot(data = intercept.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Intercept") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.male <- ggplot(data = male.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.vial <- ggplot(data = vial.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.sel.down <- ggplot(data = sel.down.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Sel Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.sel.up <- ggplot(data = sel.up.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Sel High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.male.vial <- ggplot(data = male.vial.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("Limma") + 
+  ylab("glmmTMB Gaussian") + 
+  ggtitle("Male:Vial") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.vial.down <- ggplot(data = vial.down.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial:Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.vial.up <- ggplot(data = vial.up.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial:High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.male.down <- ggplot(data = male.down.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male:Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S2.male.up <- ggplot(data = male.up.plotting_df, aes(x = Limma, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male:High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+plot_grid(S2.intercept, S2.male, S2.vial, S2.sel.down,S2.sel.up,
+          S2.male.vial, S2.vial.down, S2.vial.up, S2.male.down, S2.male.up,
+          ncol = 5,
+          nrow = 2,
+          align = "hv")
+```
+
+## Figure S3 - Gauss Nbinom Comparison
+```{r, Plot Figure S3}
+S3.intercept <- ggplot(data = intercept.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Intercept") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.male <- ggplot(data = male.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.vial <- ggplot(data = vial.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.sel.down <- ggplot(data = sel.down.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Sel Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.sel.up <- ggplot(data = sel.up.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Sel High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.male.vial <- ggplot(data = male.vial.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("Negative Binomial") + 
+  ylab("Gaussian") + 
+  ggtitle("Male:Vial") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.vial.down <- ggplot(data = vial.down.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial:Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.vial.up <- ggplot(data = vial.up.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Vial:High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.male.down <- ggplot(data = male.down.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male:Low") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+S3.male.up <- ggplot(data = male.up.plotting_df, aes(x = Nbinom, y = Gauss)) + 
+  geom_point(alpha = 0.3) + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Male:High") + 
+  stat_cor(aes(label = ..r.label..),
+           method = "pearson", digits = 3,
+           label.x.npc = "left", label.y.npc = "top", size = 3) +
+  theme_classic() +
+  theme(text = element_text(size = 10))
+
+plot_grid(S3.intercept, S3.male, S3.vial, S3.sel.down,S3.sel.up,
+          S3.male.vial, S3.vial.down, S3.vial.up, S3.male.down, S3.male.up,
+          ncol = 5,
+          nrow = 2,
+          align = "hv")
+```
+
+
+```{r, Figure S5 - upset plots}
+
+## from the scripts *_DGE_selection_extraction.R - get the lists of genes
+
+
+
+total_selectionList <- list("Gaussian Salmon" = all_selection_genes$geneID,
+                      "Negative Binomial Salmon" = nbinom_all_selection_genes$geneID,
+                      "Gaussian STAR" = star_all_selection_genes$geneID,
+                      "Negative Binomial STAR" = nbinom_star_all_selection_genes$geneID)
+
+
+
+total_gene_list_upsetPlot <- upset(fromList(total_selectionList),
+                             nsets = 4,
+                             matrix.color = "red",
+                             main.bar.color = "black",
+                             mainbar.y.label = "Number of Genes",
+                             sets.bar.color = "Black",
+                             sets.x.label = "Total Set Size",
+                             point.size = 2.2,
+                             line.size = 0.7,
+                             order.by = c("freq"),
+                             decreasing = c(T),
+                             group.by = "degree")
+
+
+
+upVdown_selectionList <- list("Gaussian Salmon" = upVdown_subset$geneID,
+                      "Negative Binomial Salmon" = nbinom_upVdown_subset$geneID,
+                      "Gaussian STAR" = star_upVdown_subset$geneID,
+                      "Negative Binomial STAR" = nbinom_star_upVdown_subset$geneID)
+
+
+
+upVdown_gene_list_upsetPlot <- upset(fromList(upVdown_selectionList),
+                             nsets = 4,
+                             matrix.color = "red",
+                             main.bar.color = "black",
+                             mainbar.y.label = "Number of Genes",
+                             sets.bar.color = "Black",
+                             sets.x.label = "Total Set Size",
+                             point.size = 2.2,
+                             line.size = 0.7,
+                             order.by = c("freq"),
+                             decreasing = c(T),
+                             group.by = "degree")
+
+
+
+downVcontrol_selectionList <- list("Gaussian Salmon" = downVcontrol_subset$geneID,
+                      "Negative Binomial Salmon" = nbinom_downVcontrol_subset$geneID,
+                      "Gaussian STAR" = star_downVcontrol_subset$geneID,
+                      "Negative Binomial STAR" = nbinom_star_downVcontrol_subset$geneID)
+
+
+
+downVcontrol_gene_list_upsetPlot <- upset(fromList(downVcontrol_selectionList),
+                             nsets = 4,
+                             matrix.color = "red",
+                             main.bar.color = "black",
+                             mainbar.y.label = "Number of Genes",
+                             sets.bar.color = "Black",
+                             sets.x.label = "Total Set Size",
+                             point.size = 2.2,
+                             line.size = 0.7,
+                             order.by = c("freq"),
+                             decreasing = c(T),
+                             group.by = "degree")
+
+
+
+controlVup_selectionList <- list("Gaussian Salmon" = controlVup_subset$geneID,
+                      "Negative Binomial Salmon" = nbinom_controlVup_subset$geneID,
+                      "Gaussian STAR" = star_controlVup_subset$geneID,
+                      "Negative Binomial STAR" = nbinom_star_controlVup_subset$geneID)
+
+
+
+controlVup_gene_list_upsetPlot <- upset(fromList(controlVup_selectionList),
+                             nsets = 4,
+                             matrix.color = "red",
+                             main.bar.color = "black",
+                             mainbar.y.label = "Number of Genes",
+                             sets.bar.color = "Black",
+                             sets.x.label = "Total Set Size",
+                             point.size = 2.2,
+                             line.size = 0.7,
+                             order.by = c("freq"),
+                             decreasing = c(T),
+                             group.by = "degree")
+
+
+
+
+
+
+gene_list_upsetPlot
+upVdown_gene_list_upsetPlot
+downVcontrol_gene_list_upsetPlot
+controlVup_gene_list_upsetPlot
+
+
+
+grid.arrange(gene_list_upsetPlot, upVdown_gene_list_upsetPlot,
+          downVcontrol_gene_list_upsetPlot, controlVup_gene_list_upsetPlot,
+          nrow = 2, ncol = 2, top = "title")
+
+```
+
+
+
+
+
+
+
+
+
+
+

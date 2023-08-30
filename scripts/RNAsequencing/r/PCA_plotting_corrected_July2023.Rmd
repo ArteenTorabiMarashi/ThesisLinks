@@ -1,0 +1,329 @@
+---
+title: "PCA_plotting_corrected_July2023"
+output: pdf_document
+date: '2023-07-19'
+editor_options: 
+  chunk_output_type: console
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+library(tximport)
+library(readr)
+library("RColorBrewer")
+library(stringr)
+library(edgeR)
+library(limma)
+library(lme4)
+library(glmmTMB)
+library(emmeans)
+library(parallel)
+library(ggplot2)
+library(ggpubr)
+library(gridExtra)
+library(TxDb.Dmelanogaster.UCSC.dm6.ensGene)
+library(ggrepel)
+library(data.table)
+library(car)
+library(DESeq2)
+library(RNAseqQC)
+library(cowplot)
+```
+
+
+```{r, include = FALSE}
+#To the directory of counts
+setwd("/Users/arteen/Desktop/School/Projects/SociabilityRNA/Data")
+#setwd("/home/arteen/projects/def-idworkin/arteen/SociabilityRNA/r/input")
+quant_files <- file.path("quants", list.files("quants"), "quant.sf")
+file.exists(quant_files)
+
+samples <- quant_files
+samples <- substring(samples, 8, 26) #grab just sample name from the file name
+
+names(quant_files) <- samples
+
+
+txdb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
+k <- keys(txdb, keytype = "TXNAME")
+tx2gene <- AnnotationDbi::select(x = txdb, keys = k, "GENEID", "TXNAME")
+
+txi <- tximport(quant_files, type = "salmon", tx2gene = tx2gene)
+
+cts <- txi$counts
+
+selection <- substring(samples, 4, 4)
+selection <- gsub("C", "Control", selection)
+selection <- gsub("D", "Low", selection)
+selection <- gsub("U", "High", selection)
+selection <- as.factor(selection)
+
+lineage <- substring(samples, 7, 7)
+lineage <- as.factor(lineage)
+
+sex <- substring(samples, 9, 9)
+sex <- gsub("F", "female", sex)
+sex <- gsub("M", "male", sex)
+sex <- as.factor(sex)
+
+expMatched <- substring(samples, 11, 11)
+expMatched <- gsub("S", "socArena", expMatched)
+expMatched <- gsub("V", "vial", expMatched)
+expMatched <- as.factor(expMatched)
+
+lane <- substring(samples, 19, 19)
+lane <- factor(lane)
+
+rna.design <- data.frame(sample = samples,
+                         file = quant_files,
+                         selection = selection,
+                         sex = sex,
+                         expMatched = expMatched,
+                         lane = lane,
+                         lineage = lineage)
+
+rna.design$selection <- relevel(as.factor(rna.design$selection), ref = "Low")
+
+rna.design$lineage2 <- paste(rna.design$selection, rna.design$lineage, sep = "")
+
+## For Limma Voom
+design <- model.matrix(~ lane +
+                         lineage +
+                         sex +
+                         expMatched +
+                         selection +
+                         sex:expMatched +
+                         selection:expMatched +
+                         selection:sex,
+                       data = rna.design)
+
+
+design_simple_PCA <- model.matrix(~ lane +
+                         sex +
+                         expMatched +
+                         selection +
+                         selection:sex,
+                       data = rna.design)
+
+dds <- DESeqDataSetFromTximport(txi, rna.design,
+                                design = design_simple_PCA)
+
+# nrow(dds)
+# keep <- rowSums(counts(dds)) > 1
+# dds <- dds[keep,]
+# nrow(dds)
+
+vsd <- vst(dds, blind = FALSE, nsub = 5000) # using 5000 genes to do the vst, but all genes are back
+
+#crap <- varianceStabilizingTransformation(dds, blind = FALSE, fitType = "parametric") # all genes
+
+
+
+```
+
+## PC 1 vs 2 and 2 vs 3, 500 genes
+```{r}
+pca_1v2_500 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "selection", shape_by = "sex",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.6) 
+
+pca_2v3_500 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 2,
+                    point_alpha = 0.5) 
+
+plot_grid(pca_1v2_500$plot, pca_2v3_500$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## PC 3 vs 4, 500 genes
+```{r}
+pca_3v4_500 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+pca_3v4_500$plot
+```
+
+## PC 1 vs 2 and 2 vs 3, 1000 genes
+```{r}
+pca_1v2_1000 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+pca_2v3_1000 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+plot_grid(pca_1v2_1000$plot, pca_2v3_1000$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## PC 3 vs 4, 1000 genes
+```{r}
+pca_3v4_1000 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+pca_3v4_1000$plot
+```
+
+## PC 1 vs 2 and 2 vs 3, 5000 genes
+```{r}
+pca_1v2_5000 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+pca_2v3_5000 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+plot_grid(pca_1v2_5000$plot, pca_2v3_5000$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## PC 3 vs 4, 5000 genes
+```{r}
+pca_3v4_5000 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "lineage", shape_by = "selection",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+pca_3v4_5000$plot
+```
+
+
+# Now colouring by sex and shape by lineage
+
+
+
+
+## Sex & Lineage PC 1 vs 2 and 2 vs 3, 500 genes
+```{r}
+sex_pca_1v2_500 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+sex_pca_2v3_500 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+plot_grid(sex_pca_1v2_500$plot, sex_pca_2v3_500$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## Sex & Lineage PC 3 vs 4, 500 genes
+```{r}
+sex_pca_3v4_500 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 500, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+sex_pca_3v4_500$plot
+```
+
+## Sex & Lineage PC 1 vs 2 and 2 vs 3, 1000 genes
+```{r}
+sex_pca_1v2_1000 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+sex_pca_2v3_1000 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+plot_grid(sex_pca_1v2_1000$plot, sex_pca_2v3_1000$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## Sex & Lineage PC 3 vs 4, 1000 genes
+```{r}
+sex_pca_3v4_1000 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 1000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+sex_pca_3v4_1000$plot
+```
+
+## Sex & Lineage PC 1 vs 2 and 2 vs 3, 5000 genes
+```{r}
+sex_pca_1v2_5000 <- plot_pca(vsd, PC_x = 1, PC_y = 2, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+sex_pca_2v3_5000 <- plot_pca(vsd, PC_x = 2, PC_y = 3, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 3,
+                    point_alpha = 0.5) 
+
+plot_grid(sex_pca_1v2_5000$plot, sex_pca_2v3_5000$plot,
+          nrow = 1, ncol = 2,
+          labels = c("A)", "B)"))
+
+```
+
+## Sex & Lineage PC 3 vs 4, 5000 genes
+```{r}
+sex_pca_3v4_5000 <- plot_pca(vsd, PC_x = 3, PC_y = 4, 
+                    color_by = "sex", shape_by = "lineage",
+                    n_feats = 5000, #number of genes
+                    scale_feats = FALSE, # we have already scaled these
+                    point_rel_size = 4,
+                    point_alpha = 0.6) 
+sex_pca_3v4_5000$plot
+```
+
