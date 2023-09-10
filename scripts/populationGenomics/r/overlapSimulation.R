@@ -27,7 +27,7 @@ mean(HowManySharedSites > 0) # what proportion of simulations have any sites in 
 
 ## Low versus High VS Low versus Control
 
-LVH_vs_LVC <- replicate(10^4, sharedSNPs(sigSitesFirst = 324, sigSitesOther = 245))
+LVH_vs_LVC <- replicate(10^4, sharedSNPs(sigSitesFirst = 333, sigSitesOther = 244))
 max(LVH_vs_LVC)
 min(LVH_vs_LVC) 
 quantile(LVH_vs_LVC, 
@@ -37,7 +37,7 @@ mean(LVH_vs_LVC > 0)
 
 ## Low versus High VS Control vs High
 
-LVH_vs_CVH <- replicate(10^4, sharedSNPs(sigSitesFirst = 324, sigSitesOther = 184))
+LVH_vs_CVH <- replicate(10^4, sharedSNPs(sigSitesFirst = 333, sigSitesOther = 179))
 max(LVH_vs_CVH)
 min(LVH_vs_CVH) 
 quantile(LVH_vs_CVH, 
@@ -48,7 +48,7 @@ mean(LVH_vs_CVH > 0)
 
 ## Low versus Control VS Control vs High
 
-LVC_vs_CVH <- replicate(10^4, sharedSNPs(sigSitesFirst = 245, sigSitesOther = 184))
+LVC_vs_CVH <- replicate(10^4, sharedSNPs(sigSitesFirst = 244, sigSitesOther = 179))
 max(LVC_vs_CVH)
 min(LVC_vs_CVH) 
 quantile(LVC_vs_CVH, 

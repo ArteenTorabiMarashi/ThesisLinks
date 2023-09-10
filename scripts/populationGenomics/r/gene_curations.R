@@ -148,7 +148,7 @@ length(unique(woodard_gene_subset$geneID)) # 4 genes out of the 212 here
 
 ## Vs this listdownVcontrol_subset
 
-pop_gen_CVD_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVLow/snpEff_genes.txt",
+pop_gen_CVD_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVcontrol/snpEff_genes.txt",
                                 header = TRUE) #336 genes
 
 length(unique(pop_gen_CVD_genes$GeneId)) # 245 genes 
@@ -163,14 +163,13 @@ CVL_DGE_overlap <- data.frame(geneID = unique(popgen_overlap$GeneId),
                               geneName = unique(popgen_overlap$GeneName))
 
 # write.table(CVL_DGE_overlap,
-#             file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DGE/CVL_geneList.csv",
+#             file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dge_olap/CVL_geneList.csv",
 #             quote = FALSE,
 #             sep = ",",
 #             row.names = FALSE,
 #             col.names = TRUE)
 
-high_and_moderate_index <- c(grep(1, pop_gen_CVD_genes$variants_impact_HIGH),
-                             grep(1, pop_gen_CVD_genes$variants_impact_MODERATE),
+high_and_moderate_index <- c(grep(1, pop_gen_CVD_genes$variants_impact_MODERATE),
                              grep(2, pop_gen_CVD_genes$variants_impact_MODERATE),
                              grep(3, pop_gen_CVD_genes$variants_impact_MODERATE))
 
@@ -182,21 +181,15 @@ high_and_moderate_overlap <- downVcontrol_subset[downVcontrol_subset$geneID %in%
 #### Now for low vs High
 
 
-pop_gen_UVD_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/lowVHigh/gene_list_UVD_updated.txt",
+pop_gen_UVD_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVhigh/snpEff_genes.txt",
                                 header = TRUE)
 
+length(unique(pop_gen_UVD_genes$GeneId))
 
-# FBgn0262301 - this gene was causing trouble so manually adding it to the list here
-
-## Vs this listdownVcontrol_subset
-
-
-UVD_popGen_genes <- c("FBgn0262301", pop_gen_UVD_genes$GeneId)
-UVD_popGen_geneNames <- c("mir-979", pop_gen_UVD_genes$GeneName)
 
 head(upVdown_subset)
 
-popgen_overlap_UVD <- upVdown_subset[upVdown_subset$geneID %in% UVD_popGen_genes,]
+popgen_overlap_UVD <- upVdown_subset[upVdown_subset$geneID %in% pop_gen_UVD_genes$GeneId,]
 
 popgen_overlap_UVD <- pop_gen_UVD_genes[pop_gen_UVD_genes$GeneId %in% upVdown_subset$geneID,]
 
@@ -204,13 +197,15 @@ LVH_DGE_overlap <- data.frame(geneID = unique(popgen_overlap_UVD$GeneId),
                               geneName = unique(popgen_overlap_UVD$GeneName))
 # 
 # write.table(LVH_DGE_overlap,
-#             file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DGE/LVH_geneList.csv",
+#             file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/LVH_geneList.csv",
 #             quote = FALSE,
 #             sep = ",",
 #             row.names = FALSE,
 #             col.names = TRUE)
 
-high_and_moderate_index <- c(grep(1, pop_gen_UVD_genes$variants_impact_MODERATE))
+high_and_moderate_index <- c(grep(1, pop_gen_UVD_genes$variants_impact_HIGH),
+                             grep(1, pop_gen_UVD_genes$variants_impact_MODERATE),
+                             grep(2, pop_gen_UVD_genes$variants_impact_MODERATE))
 
 high_and_moderate <- pop_gen_UVD_genes$GeneId[high_and_moderate_index]
 
@@ -219,7 +214,7 @@ high_and_moderate_overlap <- upVdown_subset[upVdown_subset$geneID %in% high_and_
 #### Now for Control vs High
 
 
-pop_gen_CVU_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVhigh/snpEff_genes.txt",
+pop_gen_CVU_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/controlVhigh/snpEff_genes.txt",
                                 header = TRUE) 
 
 length(unique(pop_gen_CVU_genes$GeneId)) # 184 genes 
@@ -234,9 +229,9 @@ popgen_overlap_CVU <- pop_gen_CVU_genes[pop_gen_CVU_genes$GeneId %in% controlVup
 
 CVH_DGE_overlap <- data.frame(geneID = unique(popgen_overlap_CVU$GeneId),
                               geneName = unique(popgen_overlap_CVU$GeneName))
-
+# 
 # write.table(CVH_DGE_overlap,
-#             file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DGE/CVH_geneList.csv",
+#             file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dge_olap/CVH_geneList.csv",
 #             quote = FALSE,
 #             sep = ",",
 #             row.names = FALSE,
@@ -256,10 +251,10 @@ high_and_moderate_overlap <- controlVup_subset[controlVup_subset$geneID %in% hig
 
 
 ## Ancestor vs Low
-pop_gen_AVL_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVlow/snpEff_genes.txt",
+pop_gen_AVL_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVlow/snpEff_genes.txt",
                                 header = TRUE) 
 
-length(unique(pop_gen_AVL_genes$GeneId)) # 184 genes 
+length(unique(pop_gen_AVL_genes$GeneId)) 
 
 
 downVcontrol_subset
@@ -273,7 +268,7 @@ AVL_DGE_overlap <- data.frame(geneID = unique(popgen_overlap_AVL$GeneId),
                               geneName = unique(popgen_overlap_AVL$GeneName))
 
 # write.table(AVL_DGE_overlap,
-#             file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DGE/AVL_geneList.csv",
+#             file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dge_olap/AVL_geneList.csv",
 #             quote = FALSE,
 #             sep = ",",
 #             row.names = FALSE,
@@ -284,6 +279,7 @@ AVL_DGE_overlap <- data.frame(geneID = unique(popgen_overlap_AVL$GeneId),
 high_and_moderate_index <- c(grep(1, pop_gen_AVL_genes$variants_impact_HIGH),
                              grep(1, pop_gen_AVL_genes$variants_impact_MODERATE),
                              grep(2, pop_gen_AVL_genes$variants_impact_MODERATE),
+                             grep(3, pop_gen_AVL_genes$variants_impact_MODERATE),
                              grep(4, pop_gen_AVL_genes$variants_impact_MODERATE))
 
 high_and_moderate <- unique(pop_gen_AVL_genes$GeneId[high_and_moderate_index])
@@ -296,7 +292,7 @@ popgen_overlap_AVL_DTU <- downVcontrol_dtu_subset[downVcontrol_dtu_subset$gene %
 
 
 ## Ancestor vs High
-pop_gen_AVH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVhigh/snpEff_genes.txt",
+pop_gen_AVH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVhigh/snpEff_genes.txt",
                                 header = TRUE) 
 
 length(unique(pop_gen_AVH_genes$GeneId)) # 184 genes 
@@ -312,7 +308,7 @@ AVH_DGE_overlap <- data.frame(geneID = unique(popgen_overlap_AVH$GeneId),
                               geneName = unique(popgen_overlap_AVH$GeneName))
 
 # write.table(AVH_DGE_overlap,
-#             file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DGE/AVH_geneList.csv",
+#             file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dge_olap/AVH_geneList.csv",
 #             quote = FALSE,
 #             sep = ",",
 #             row.names = FALSE,
@@ -367,7 +363,7 @@ for (i in 1:nrow(LVH_DTU_overlap)) {
 geneName <- unlist(gene_name)
 LVH_DTU_overlap <- cbind(LVH_DTU_overlap, geneName)
 write.table(LVH_DTU_overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DTU/LVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dtu_olap/LVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -390,7 +386,7 @@ for (i in 1:nrow(CVL_DTU_overlap)) {
 geneName <- unlist(gene_name)
 CVL_DTU_overlap <- cbind(CVL_DTU_overlap, geneName)
 write.table(CVL_DTU_overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DTU/CVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dtu_olap/CVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -413,7 +409,7 @@ for (i in 1:nrow(CVH_DTU_overlap)) {
 geneName <- unlist(gene_name)
 CVH_DTU_overlap <- cbind(CVH_DTU_overlap, geneName)
 write.table(CVH_DTU_overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DTU/CVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dtu_olap/CVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -436,7 +432,7 @@ for (i in 1:nrow(AVL_DTU_overlap)) {
 geneName <- unlist(gene_name)
 AVL_DTU_overlap <- cbind(AVL_DTU_overlap, geneName)
 write.table(AVL_DTU_overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DTU/AVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dtu_olap/AVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -459,7 +455,7 @@ for (i in 1:nrow(AVH_DTU_overlap)) {
 geneName <- unlist(gene_name)
 AVH_DTU_overlap <- cbind(AVH_DTU_overlap, geneName)
 write.table(AVH_DTU_overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_DTU/AVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/dtu_olap/AVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -479,7 +475,7 @@ length(unique(DTU_popgen_overlap_CVU$transcript))
 
 ## Upset plot for the three pop gen lists
 
-to_list <- list("Low versus High" = unique(UVD_popGen_genes),
+to_list <- list("Low versus High" = unique(pop_gen_UVD_genes$GeneId),
                 "Control versus Low" = (unique(pop_gen_CVD_genes$GeneId)),
                 "Control versus High" = unique(pop_gen_CVU_genes$GeneId),
                 "Ancestor versus High" = unique(pop_gen_AVH_genes$GeneId),
@@ -509,7 +505,7 @@ upset(data = fromList(to_list),
 
 ## CMH First
 
-AVL_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVlow/cmh/snpEff_genes.txt",
+AVL_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVlow/cmh/snpEff_genes.txt",
                                 header = TRUE) 
 
 AVL_CMH_geneList <- data.frame(geneID = unique(AVL_CMH_genes$GeneId),
@@ -517,7 +513,7 @@ AVL_CMH_geneList <- data.frame(geneID = unique(AVL_CMH_genes$GeneId),
 
 
 write.table(AVL_CMH_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/cmh_lists/AVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmh/AVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -525,7 +521,7 @@ write.table(AVL_CMH_geneList,
 ####
 
 
-AVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVhigh/cmh/snpEff_genes.txt",
+AVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVhigh/cmh/snpEff_genes.txt",
                             header = TRUE) 
 
 AVH_CMH_geneList <- data.frame(geneID = unique(AVH_CMH_genes$GeneId),
@@ -533,7 +529,7 @@ AVH_CMH_geneList <- data.frame(geneID = unique(AVH_CMH_genes$GeneId),
 
 head(AVH_CMH_geneList)
 write.table(AVH_CMH_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/cmh_lists/AVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmh/AVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -541,7 +537,7 @@ write.table(AVH_CMH_geneList,
 ####
 
 
-LVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/lowVHigh/cmh/snpEff_genes.txt",
+LVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVHigh/cmh/snpEff_genes.txt",
                             header = TRUE) 
 
 LVH_CMH_geneList <- data.frame(geneID = unique(LVH_CMH_genes$GeneId),
@@ -549,7 +545,7 @@ LVH_CMH_geneList <- data.frame(geneID = unique(LVH_CMH_genes$GeneId),
 
 head(LVH_CMH_geneList)
 write.table(LVH_CMH_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/cmh_lists/LVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmh/LVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -557,7 +553,7 @@ write.table(LVH_CMH_geneList,
 ####
 
 
-CVL_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVLow/cmh/snpEff_genes.txt",
+CVL_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVcontrol/cmh/snpEff_genes.txt",
                             header = TRUE) 
 
 CVL_CMH_geneList <- data.frame(geneID = unique(CVL_CMH_genes$GeneId),
@@ -565,7 +561,7 @@ CVL_CMH_geneList <- data.frame(geneID = unique(CVL_CMH_genes$GeneId),
 
 head(CVL_CMH_geneList)
 write.table(CVL_CMH_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/cmh_lists/CVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmh/CVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -573,7 +569,7 @@ write.table(CVL_CMH_geneList,
 ####
 
 
-CVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVhigh/cmh/snpEff_genes.txt",
+CVH_CMH_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/controlVhigh/cmh/snpEff_genes.txt",
                             header = TRUE) 
 
 CVH_CMH_geneList <- data.frame(geneID = unique(CVH_CMH_genes$GeneId),
@@ -581,7 +577,7 @@ CVH_CMH_geneList <- data.frame(geneID = unique(CVH_CMH_genes$GeneId),
 
 head(CVH_CMH_geneList)
 write.table(CVH_CMH_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/cmh_lists/CVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmh/CVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -591,7 +587,7 @@ write.table(CVH_CMH_geneList,
 
 
 
-AVL_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVlow/fst/snpEff_genes.txt",
+AVL_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVlow/fst/snpEff_genes.txt",
                             header = TRUE) 
 
 AVL_FST_geneList <- data.frame(geneID = unique(AVL_FST_genes$GeneId),
@@ -599,7 +595,7 @@ AVL_FST_geneList <- data.frame(geneID = unique(AVL_FST_genes$GeneId),
 
 head(AVL_FST_geneList)
 write.table(AVL_FST_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/fst_lists/AVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/fst/AVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -609,7 +605,7 @@ write.table(AVL_FST_geneList,
 
 
 
-AVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/ancestorVhigh/test/snpEff_genes.txt",
+AVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/ancestorVhigh/fst/snpEff_genes.txt",
                             header = TRUE) 
 
 AVH_FST_geneList <- data.frame(geneID = unique(AVH_FST_genes$GeneId),
@@ -617,7 +613,7 @@ AVH_FST_geneList <- data.frame(geneID = unique(AVH_FST_genes$GeneId),
 
 head(AVH_FST_geneList)
 write.table(AVH_FST_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/fst_lists/AVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/fst/AVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -627,7 +623,7 @@ write.table(AVH_FST_geneList,
 
 
 
-LVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/lowVHigh/fst/snpEff_genes.txt",
+LVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVHigh/fst/snpEff_genes.txt",
                             header = TRUE) 
 
 LVH_FST_geneList <- data.frame(geneID = unique(LVH_FST_genes$GeneId),
@@ -635,7 +631,7 @@ LVH_FST_geneList <- data.frame(geneID = unique(LVH_FST_genes$GeneId),
 
 head(LVH_FST_geneList)
 write.table(LVH_FST_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/fst_lists/LVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/fst/LVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -645,7 +641,7 @@ write.table(LVH_FST_geneList,
 
 
 
-CVL_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVLow/fst/snpEff_genes.txt",
+CVL_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/lowVcontrol/fst/snpEff_genes.txt",
                             header = TRUE) 
 
 CVL_FST_geneList <- data.frame(geneID = unique(CVL_FST_genes$GeneId),
@@ -653,7 +649,7 @@ CVL_FST_geneList <- data.frame(geneID = unique(CVL_FST_genes$GeneId),
 
 head(CVL_FST_geneList)
 write.table(CVL_FST_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/fst_lists/CVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/fst/CVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -663,7 +659,7 @@ write.table(CVL_FST_geneList,
 
 
 
-CVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/bedtools/controlVhigh/fst/snpEff_genes.txt",
+CVH_FST_genes <- read.table(file = "/Users/arteen/Desktop/pop_gen_out/revisions/controlVhigh/fst/snpEff_genes.txt",
                             header = TRUE) 
 
 CVH_FST_geneList <- data.frame(geneID = unique(CVH_FST_genes$GeneId),
@@ -671,7 +667,7 @@ CVH_FST_geneList <- data.frame(geneID = unique(CVH_FST_genes$GeneId),
 
 head(CVH_FST_geneList)
 write.table(CVH_FST_geneList,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/fst_lists/CVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/fst/CVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -682,11 +678,11 @@ write.table(CVH_FST_geneList,
 # Now for the overlap between FST and CMH
 
 
-LVH_CMH_FST_Overlap <- data.frame(geneID = unique(UVD_popGen_genes),
-                                  geneName = unique(UVD_popGen_geneNames))
+LVH_CMH_FST_Overlap <- data.frame(geneID = unique(pop_gen_UVD_genes$GeneId),
+                                  geneName = unique(pop_gen_UVD_genes$GeneName))
 head(LVH_CMH_FST_Overlap)
 write.table(LVH_CMH_FST_Overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_cmh_fst_lists/LVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmhFstOlap/LVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -696,7 +692,7 @@ AVL_CMH_FST_Overlap <- data.frame(geneID = unique(pop_gen_AVL_genes$GeneId),
                                   geneName = unique(pop_gen_AVL_genes$GeneName))
 head(AVL_CMH_FST_Overlap)
 write.table(AVL_CMH_FST_Overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_cmh_fst_lists/AVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmhFstOlap/AVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -706,7 +702,7 @@ AVH_CMH_FST_Overlap <- data.frame(geneID = unique(pop_gen_AVH_genes$GeneId),
                                   geneName = unique(pop_gen_AVH_genes$GeneName))
 head(AVH_CMH_FST_Overlap)
 write.table(AVH_CMH_FST_Overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_cmh_fst_lists/AVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmhFstOlap//AVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -717,7 +713,7 @@ CVL_CMH_FST_Overlap <- data.frame(geneID = unique(pop_gen_CVD_genes$GeneId),
                                   geneName = unique(pop_gen_CVD_genes$GeneName))
 head(CVL_CMH_FST_Overlap)
 write.table(CVL_CMH_FST_Overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_cmh_fst_lists/CVL_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmhFstOlap//CVL_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
@@ -727,7 +723,7 @@ CVH_CMH_FST_Overlap <- data.frame(geneID = unique(pop_gen_CVU_genes$GeneId),
                                   geneName = unique(pop_gen_CVU_genes$GeneName))
 head(CVH_CMH_FST_Overlap)
 write.table(CVH_CMH_FST_Overlap,
-            file = "/Users/arteen/Desktop/pop_gen_out/gene_lists/overlap_cmh_fst_lists/CVH_geneList.csv",
+            file = "/Users/arteen/Desktop/pop_gen_out/revisions/gene_lists/cmhFstOlap/CVH_geneList.csv",
             quote = FALSE,
             sep = ",",
             row.names = FALSE,
