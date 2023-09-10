@@ -1,0 +1,1 @@
+java -Xmx8g -jar /Users/arteen/Desktop/pop_gen_out/snpEff/snpEff/snpEff.jar -ud -download Drosophila_melanogaster subsetted_vcf.vcf > genes.txt

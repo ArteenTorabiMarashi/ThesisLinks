@@ -1,0 +1,1 @@
+bedtools intersect -a cmh_top0.1.bed -b fst_top.bed > bed.bed
